@@ -1,518 +1,672 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cricket Match Calculator</title>
-<style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-:root {
-  --primary: #0072ff;
-  --secondary: #00c6ff;
-  --accent: #ff6b6b;
-  --dark: #333;
-  --light: #f8f9fa;
-  --success: #28a745;
-  --warning: #ffc107;
-  --danger: #dc3545;
-}
-body, html {
-  height: 100%;
-  width: 100%;
-  background: linear-gradient(135deg, #00c6ff, #0072ff);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 10px;
-}
-.container {
-  width: 95%;
-  max-width: 550px;
-  background: #fff;
-  border-radius: 20px;
-  padding: 25px;
-  text-align: center;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-  transition: transform 0.3s ease;
-}
-.container:hover { transform: translateY(-5px); }
-.screen { display: flex; flex-direction: column; align-items: center; }
-.hidden { display: none; }
-h1, h2, h3, h4 { margin: 10px 0; color: var(--dark); }
-h1 { font-size: 2.5rem; color: var(--primary); margin-bottom: 20px; }
-h2 { font-size: 1.8rem; margin-bottom: 15px; }
-button {
-  padding: 12px 20px; margin: 10px 5px; border: none; border-radius: 10px;
-  cursor: pointer; font-size: 16px; font-weight: 600; transition: all 0.3s;
-  background: var(--primary); color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-button:hover { background: #005bb5; transform: translateY(-2px); }
-button.secondary { background: var(--secondary); }
-button.secondary:hover { background: #00a8e8; }
-button.accent { background: var(--accent); }
-button.accent:hover { background: #ff5252; }
-button:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
-input, select { padding: 12px; margin: 8px 0; width: 90%; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; }
-input:focus, select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(0, 114, 255, 0.2); }
-.form-group { margin: 15px 0; width: 100%; text-align: left; }
-label { display: block; margin-bottom: 5px; font-weight: 600; color: var(--dark); }
-.flex { display: flex; justify-content: space-around; flex-wrap: wrap; margin: 15px 0; }
-.score-btn { flex: 1 1 30%; margin: 5px; padding: 15px 5px; font-size: 18px; font-weight: bold; }
-.stats { margin-top: 15px; text-align: left; font-size: 14px; white-space: pre-line; background: var(--light); padding: 15px; border-radius: 10px; width: 100%; }
-.popup { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; flex-direction: column; padding: 20px; display: none; }
-.popup-content { background: white; border-radius: 20px; padding: 25px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
-.progress-bar, .target-bar { width: 100%; height: 8px; background: #e0e0e0; border-radius: 4px; margin: 15px 0; overflow: hidden; }
-.progress, .target-progress { height: 100%; background: var(--success); width: 0%; transition: width 0.5s ease; }
-.target-progress { background: var(--danger); }
-.team-badge { display: inline-block; padding: 5px 10px; background: var(--primary); color: white; border-radius: 20px; font-size: 0.8rem; margin-left: 10px; }
-.score-display { font-size: 1.8rem; font-weight: bold; margin: 10px 0; color: var(--primary); }
-.over-display { font-size: 1.2rem; color: var(--dark); margin-bottom: 15px; }
-.batsmen-display { display: flex; justify-content: space-between; width: 100%; margin: 15px 0; position: relative; }
-.batsman-card { flex: 1; padding: 10px; margin: 0 5px; background: var(--light); border-radius: 10px; text-align: center; transition: all 0.3s; }
-.batsman-name { font-weight: bold; margin-bottom: 5px; }
-.batsman-runs { font-size: 1.5rem; color: var(--primary); }
-.bowler-card { padding: 10px; background: var(--light); border-radius: 10px; margin: 10px 0; text-align: center; }
-.striker-indicator { position: absolute; top: -10px; width: 20px; height: 20px; background: var(--warning); border-radius: 50%; transition: all 0.3s ease; z-index: 10; }
-.free-hit-badge { background: var(--success); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; margin-left: 5px; }
-.run-highlight { animation: pulse 0.5s; }
-@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-@media (max-width: 500px) {
-  .score-btn { flex: 1 1 45%; }
-  .batsmen-display { flex-direction: column; }
-  .striker-indicator { top: -5px; left: 50%; transform: translateX(-50%); }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LED Text Display App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f9fafb;
+            overflow-x: hidden;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #6b7280;
+            font-size: 0.75rem;
+            padding: 0.25rem;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            color: #374151;
+            transform: scale(1.05);
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .show-btn {
+            padding: 0.5rem 1.5rem;
+            background: #d8b4fe;
+            color: #581c87;
+            border: none;
+            border-radius: 9999px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .show-btn:hover {
+            background: #c084fc;
+        }
+
+        .show-btn:active {
+            transform: scale(0.95);
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            font-size: 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .menu-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* Display Area */
+        .display-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .display-box {
+            position: relative;
+            border-radius: 1rem;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .display-box.rotated {
+            transform: rotate(90deg);
+        }
+
+        .display-box.mirrored {
+            transform: scaleX(-1);
+        }
+
+        .display-box.rotated.mirrored {
+            transform: rotate(90deg) scaleX(-1);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            width: 2.5rem;
+            height: 2.5rem;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            z-index: 10;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: scale(1.1);
+        }
+
+        .close-btn:active {
+            transform: scale(0.9);
+        }
+
+        .display-text {
+            text-align: center;
+            word-wrap: break-word;
+            max-width: 90%;
+            padding: 2rem;
+        }
+
+        .placeholder-text {
+            color: rgba(128, 128, 128, 0.5);
+            font-size: 3rem;
+            font-weight: bold;
+        }
+
+        /* Themes Section */
+        .themes-section {
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            padding: 1rem;
+            position: sticky;
+            bottom: 0;
+        }
+
+        .themes-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .themes-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .see-all-btn {
+            background: none;
+            border: none;
+            color: #9333ea;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .see-all-btn:hover {
+            color: #7e22ce;
+        }
+
+        .see-all-btn:active {
+            transform: scale(0.95);
+        }
+
+        .themes-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 768px) {
+            .themes-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+
+        .theme-card {
+            position: relative;
+            aspect-ratio: 16/9;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .theme-card:hover {
+            transform: scale(1.05);
+        }
+
+        .theme-card:active {
+            transform: scale(0.95);
+        }
+
+        .theme-card.active {
+            border-color: #9333ea;
+            box-shadow: 0 0 0 2px #9333ea;
+        }
+
+        .theme-card-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: clamp(0.875rem, 3vw, 1.5rem);
+            padding: 0.5rem;
+        }
+
+        /* Full Themes View */
+        .category-section {
+            margin-bottom: 2rem;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+
+        .category-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            text-transform: capitalize;
+        }
+
+        .full-themes-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        @media (min-width: 768px) {
+            .full-themes-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #0f766e;
+            color: white;
+            padding: 0.75rem 0;
+            z-index: 200;
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            padding: 0.5rem 1rem;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:active {
+            transform: scale(0.9);
+        }
+
+        .nav-btn.active {
+            background: white;
+            color: #0f766e;
+            border-radius: 9999px;
+            flex-direction: row;
+            padding: 0.5rem 1.5rem;
+        }
+
+        .nav-icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .nav-icon-circle {
+            width: 1.5rem;
+            height: 1.5rem;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .nav-btn.active .nav-icon-circle {
+            background: #0f766e;
+        }
+
+        /* Text Input */
+        .text-input-container {
+            position: fixed;
+            bottom: 4rem;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            padding: 1rem;
+            z-index: 150;
+        }
+
+        .text-input {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: block;
+            padding: 0.75rem 1rem;
+            border: 2px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: #9333ea;
+            box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+        }
+
+        /* Content Area */
+        .content-area {
+            min-height: calc(100vh - 8rem);
+            padding-bottom: 8rem;
+        }
+
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .history-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .history-item {
+            position: relative;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 2rem;
+            height: 2rem;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .delete-btn:hover {
+            background: rgba(220, 38, 38, 1);
+            transform: scale(1.1);
+        }
+
+        .delete-btn:active {
+            transform: scale(0.9);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #6b7280;
+            margin-top: 3rem;
+            font-size: 1.125rem;
+        }
+
+        /* Fullscreen Display */
+        .fullscreen-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .fullscreen-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 3rem;
+            height: 3rem;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: all 0.2s;
+        }
+
+        .fullscreen-close:hover {
+            background: rgba(0, 0, 0, 0.95);
+            transform: scale(1.1);
+        }
+
+        .fullscreen-close:active {
+            transform: scale(0.9);
+        }
+
+        .fullscreen-text {
+            font-size: clamp(3rem, 15vw, 12rem);
+            text-align: center;
+            max-width: 90%;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Loading state */
+        .loading {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+    </style>
 </head>
 <body>
+    <!-- Composer View -->
+    <div id="composer-view">
+        <div class="header">
+            <div class="header-content">
+                <button class="menu-btn" onclick="toggleMenu()">☰</button>
+                <div class="header-controls">
+                    <button class="control-btn" onclick="mirrorDisplay()">
+                        <span style="font-size: 1.25rem">[]:</span>
+                        <span>Mirror</span>
+                    </button>
+                    <button class="control-btn" onclick="rotateDisplay()">
+                        <span style="font-size: 1.25rem">↻</span>
+                        <span>Rotate</span>
+                    </button>
+                    <button class="control-btn" onclick="saveDisplay()">
+                        <span style="font-size: 1.25rem">↓</span>
+                        <span>Save</span>
+                    </button>
+                    <button class="control-btn" onclick="shareDisplay()">
+                        <span style="font-size: 1.25rem">⤴</span>
+                        <span>Share</span>
+                    </button>
+                </div>
+                <button class="show-btn" onclick="showDisplay()">Show</button>
+            </div>
+        </div>
 
-<!-- Start Screen -->
-<div class="container screen" id="startScreen">
-  <h1>Cricket Match Calculator</h1>
-  <p>Create and manage your cricket match with ease</p>
-  <button id="createMatchBtn">Create Match</button>
-</div>
+        <div class="display-container">
+            <div id="display-box" class="display-box">
+                <button id="close-btn" class="close-btn hidden" onclick="clearText()">×</button>
+                <div id="display-text" class="display-text placeholder-text">Write here</div>
+            </div>
+        </div>
 
-<!-- Team Setup -->
-<div class="container screen hidden" id="teamSetup">
-  <h2 id="teamTitle">Team 1 Setup</h2>
-  <div class="form-group">
-    <label for="teamName">Team Name:</label>
-    <input type="text" id="teamName" placeholder="Enter team name">
-  </div>
-  <div class="form-group">
-    <label for="numPlayers">Number of Players:</label>
-    <input type="number" id="numPlayers" min="1" max="11" value="11">
-  </div>
-  <div class="form-group">
-    <label for="numOvers">Overs:</label>
-    <input type="number" id="numOvers" min="1" max="50" value="20">
-  </div>
-  <div id="playerInputs"></div>
-  <div class="flex">
-    <button id="prevTeamBtn" class="secondary">Previous</button>
-    <button id="nextTeamBtn">Next Team</button>
-  </div>
-</div>
+        <div class="themes-section">
+            <div class="themes-header">
+                <div class="themes-title">
+                    <span>THEMES</span>
+                    <span>▼</span>
+                </div>
+                <button class="see-all-btn" onclick="showView('themes')">
+                    See all →
+                </button>
+            </div>
+            <div id="quick-themes" class="themes-grid"></div>
+        </div>
 
-<!-- Match Screen -->
-<div class="container screen hidden" id="matchScreen">
-  <h2 id="inningInfo">Team 1 Batting <span class="team-badge" id="targetDisplay"></span></h2>
-  <div class="progress-bar"><div class="progress" id="overProgress"></div></div>
-  <div class="target-bar hidden" id="targetBar"><div class="target-progress" id="targetProgress"></div></div>
-  <div class="target-info hidden" id="targetInfo">
-    <span>0</span><span id="targetValue">Target: 0</span><span id="targetMax">0</span>
-  </div>
-  <div class="score-display" id="scoreBoard">0 / 0</div>
-  <div class="over-display" id="overDisplay">Overs: 0.0</div>
-
-  <div class="batsmen-display" id="batsmenDisplay">
-    <div class="striker-indicator" id="strikerIndicator"></div>
-    <div class="batsman-card" id="batsman1Card">
-      <div class="batsman-name" id="batsman1Name">Batsman 1</div>
-      <div class="batsman-runs" id="batsman1Runs">0(0)</div>
+        <div class="text-input-container">
+            <input 
+                type="text" 
+                id="text-input" 
+                class="text-input" 
+                placeholder="Type your text here..."
+                oninput="updateDisplay()"
+            >
+        </div>
     </div>
-    <div class="batsman-card" id="batsman2Card">
-      <div class="batsman-name" id="batsman2Name">Batsman 2</div>
-      <div class="batsman-runs" id="batsman2Runs">0(0)</div>
+
+    <!-- Themes View -->
+    <div id="themes-view" class="hidden">
+        <div class="header">
+            <div class="header-content">
+                <button class="menu-btn" onclick="showView('composer')">☰</button>
+                <div class="header-title">Themes</div>
+                <div style="width: 2.5rem"></div>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div id="all-themes" style="max-width: 1200px; margin: 0 auto; padding: 1rem;"></div>
+        </div>
     </div>
-  </div>
 
-  <div class="bowler-card">
-    <div>Current Bowler</div>
-    <div id="currentBowler">Bowler</div>
-    <button id="changeBowlerBtn" class="secondary">Change Bowler</button>
-  </div>
+    <!-- History View -->
+    <div id="history-view" class="hidden">
+        <div class="header">
+            <div class="header-content">
+                <button class="menu-btn" onclick="showView('composer')">☰</button>
+                <div class="header-title">History</div>
+                <div style="width: 2.5rem"></div>
+            </div>
+        </div>
 
-  <div class="flex" id="scoreButtons">
-    <button class="score-btn" data-run="0">0</button>
-    <button class="score-btn" data-run="1">1</button>
-    <button class="score-btn" data-run="2">2</button>
-    <button class="score-btn" data-run="3">3</button>
-    <button class="score-btn" data-run="4">4</button>
-    <button class="score-btn" data-run="6">6</button>
-    <button class="score-btn" data-run="wide">Wide</button>
-    <button class="score-btn" data-run="noball">No Ball</button>
-    <button class="score-btn" data-run="wicket" class="accent">Wicket</button>
-    <button class="score-btn secondary" id="swapBatsmen">Swap Strike</button>
-  </div>
-
-  <div class="stats" id="playerStats"></div>
-  <div class="flex">
-    <button id="endInningsBtn" class="accent">End Innings</button>
-  </div>
-</div>
-
-<!-- Bowler Popup -->
-<div class="popup" id="bowlerPopup">
-  <div class="popup-content">
-    <h3>Select Bowler</h3>
-    <div id="bowlerButtons"></div>
-    <button id="closeBowlerPopup">Cancel</button>
-  </div>
-</div>
-
-<!-- Summary Popup -->
-<div class="popup" id="summaryPopup">
-  <div class="popup-content">
-    <h3>Innings Summary</h3>
-    <pre id="summaryText"></pre>
-    <div class="flex">
-      <button id="closeSummary">Close</button>
-      <button id="nextInningsBtn" class="secondary">Next Innings</button>
-      <button id="newMatchBtn">New Match</button>
+        <div class="content-area">
+            <div id="history-grid" class="history-grid"></div>
+        </div>
     </div>
-  </div>
-</div>
 
-<script>
-// DOM Elements
-const startScreen = document.getElementById('startScreen');
-const teamSetup = document.getElementById('teamSetup');
-const matchScreen = document.getElementById('matchScreen');
-const createMatchBtn = document.getElementById('createMatchBtn');
-const prevTeamBtn = document.getElementById('prevTeamBtn');
-const nextTeamBtn = document.getElementById('nextTeamBtn');
-const teamTitle = document.getElementById('teamTitle');
-const teamNameInput = document.getElementById('teamName');
-const numPlayersInput = document.getElementById('numPlayers');
-const numOversInput = document.getElementById('numOvers');
-const playerInputsDiv = document.getElementById('playerInputs');
-const inningInfo = document.getElementById('inningInfo');
-const targetDisplay = document.getElementById('targetDisplay');
-const scoreBoard = document.getElementById('scoreBoard');
-const overDisplay = document.getElementById('overDisplay');
-const batsman1Name = document.getElementById('batsman1Name');
-const batsman1Runs = document.getElementById('batsman1Runs');
-const batsman2Name = document.getElementById('batsman2Name');
-const batsman2Runs = document.getElementById('batsman2Runs');
-const batsman1Card = document.getElementById('batsman1Card');
-const batsman2Card = document.getElementById('batsman2Card');
-const currentBowlerDisplay = document.getElementById('currentBowler');
-const changeBowlerBtn = document.getElementById('changeBowlerBtn');
-const scoreButtonsDiv = document.getElementById('scoreButtons');
-const playerStatsDiv = document.getElementById('playerStats');
-const endInningsBtn = document.getElementById('endInningsBtn');
-const bowlerPopup = document.getElementById('bowlerPopup');
-const bowlerButtonsDiv = document.getElementById('bowlerButtons');
-const closeBowlerPopup = document.getElementById('closeBowlerPopup');
-const summaryPopup = document.getElementById('summaryPopup');
-const summaryText = document.getElementById('summaryText');
-const closeSummary = document.getElementById('closeSummary');
-const nextInningsBtn = document.getElementById('nextInningsBtn');
-const newMatchBtn = document.getElementById('newMatchBtn');
-const overProgress = document.getElementById('overProgress');
-const targetBar = document.getElementById('targetBar');
-const targetProgress = document.getElementById('targetProgress');
-const targetInfo = document.getElementById('targetInfo');
-const targetValue = document.getElementById('targetValue');
-const batsmenDisplay = document.getElementById('batsmenDisplay');
-const strikerIndicator = document.getElementById('strikerIndicator');
-const swapBatsmenBtn = document.getElementById('swapBatsmen');
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <div class="nav-content">
+            <button class="nav-btn" id="nav-history" onclick="showView('history')">
+                <div class="nav-icon">↻</div>
+                <span>History</span>
+            </button>
+            <button class="nav-btn active" id="nav-composer" onclick="showView('composer')">
+                <div class="nav-icon">
+                    <div class="nav-icon-circle"></div>
+                </div>
+                <span>Composer</span>
+            </button>
+            <button class="nav-btn" id="nav-themes" onclick="showView('themes')">
+                <div class="nav-icon">
+                    <div class="nav-icon-circle"></div>
+                </div>
+                <span>Themes</span>
+            </button>
+        </div>
+    </div>
 
-// Match Data
-let teams = [{name: "", players: []}, {name: "", players: []}];
-let numPlayers = 11;
-let overs = 20;
-let currentTeam = 0;
-let innings = 0;
-let target = 0;
-let batsmen = [];
-let strikerIndex = 0;
-let nextBatsmanIndex = 2;
-let bowler = null;
-let ballsBowled = 0;
-let totalBalls = 0;
-let score = 0;
-let wickets = 0;
-let extras = 0;
-let stats = {};
-let maxWickets = 0;
-let isFreeHit = false;
+    <!-- Fullscreen Display -->
+    <div id="fullscreen-display" class="fullscreen-overlay hidden">
+        <button class="fullscreen-close" onclick="closeFullscreen()">×</button>
+        <div id="fullscreen-content"></div>
+    </div>
 
-// Generate player inputs
-function generatePlayerInputs() {
-  playerInputsDiv.innerHTML = '';
-  for(let i = 0; i < numPlayers; i++) {
-    let input = document.createElement('input');
-    input.placeholder = 'Player ' + (i + 1) + ' Name';
-    input.id = 'player' + i;
-    playerInputsDiv.appendChild(input);
-  }
-}
-numPlayersInput.addEventListener('change', () => {
-  numPlayers = parseInt(numPlayersInput.value);
-  generatePlayerInputs();
-});
-
-// Navigation
-createMatchBtn.addEventListener('click', () => {
-  startScreen.classList.add('hidden');
-  teamSetup.classList.remove('hidden');
-  generatePlayerInputs();
-});
-
-prevTeamBtn.addEventListener('click', () => {
-  if (currentTeam === 1) {
-    currentTeam = 0;
-    teamTitle.textContent = 'Team 1 Setup';
-    teamNameInput.value = teams[0].name;
-    generatePlayerInputs();
-    for (let i = 0; i < teams[0].players.length; i++) {
-      const input = document.getElementById('player' + i);
-      if (input) input.value = teams[0].players[i];
-    }
-  }
-});
-
-nextTeamBtn.addEventListener('click', () => {
-  teams[currentTeam].name = teamNameInput.value || 'Team ' + (currentTeam + 1);
-  teams[currentTeam].players = [];
-  for(let i = 0; i < numPlayers; i++) {
-    let name = document.getElementById('player' + i)?.value || 'Player ' + (i + 1);
-    teams[currentTeam].players.push(name);
-  }
-  if(currentTeam === 0) {
-    currentTeam = 1;
-    teamTitle.textContent = 'Team 2 Setup';
-    teamNameInput.value = '';
-    generatePlayerInputs();
-  } else {
-    overs = parseInt(numOversInput.value);
-    teamSetup.classList.add('hidden');
-    matchScreen.classList.remove('hidden');
-    startMatch();
-  }
-});
-
-// Start match
-function startMatch() {
-  innings = 0;
-  target = 0;
-  startInnings();
-}
-
-function startInnings() {
-  const battingTeam = innings % 2;
-  const bowlingTeam = (innings + 1) % 2;
-  maxWickets = teams[battingTeam].players.length;
-  batsmen = [teams[battingTeam].players[0], teams[battingTeam].players[1]];
-  strikerIndex = 0;
-  nextBatsmanIndex = 2;
-  bowler = teams[bowlingTeam].players[0];
-
-  ballsBowled = totalBalls = score = wickets = extras = 0;
-  isFreeHit = false;
-  stats = {};
-  teams[battingTeam].players.forEach(p => {
-    stats[p] = {runs: 0, balls: 0, fours: 0, sixes: 0, out: false, outType: ''};
-  });
-
-  inningInfo.textContent = `${teams[battingTeam].name} Batting`;
-  if (innings === 1) {
-    targetDisplay.textContent = `Target: ${target + 1}`;
-    targetBar.classList.remove('hidden');
-    targetInfo.classList.remove('hidden');
-    targetValue.textContent = `Target: ${target + 1}`;
-  } else {
-    targetDisplay.textContent = '';
-    targetBar.classList.add('hidden');
-    targetInfo.classList.add('hidden');
-  }
-  updateDisplay();
-}
-
-// FIXED: Swap Strike - Never counts as ball
-function swapStrike(auto = false) {
-  const battingTeam = innings % 2;
-  const playerCount = teams[battingTeam].players.length;
-
-  if (playerCount <= 1) return;
-  if (wickets >= playerCount - 1) return;
-  if (batsmen.length < 2) return;
-  if (stats[batsmen[0]]?.out || stats[batsmen[1]]?.out) return;
-
-  strikerIndex = 1 - strikerIndex;
-
-  if (!auto) {
-    batsman1Card.style.transition = batsman2Card.style.transition = 'transform 0.2s';
-    batsman1Card.style.transform = batsman2Card.style.transform = 'scale(0.93)';
-    setTimeout(() => {
-      batsman1Card.style.transform = batsman2Card.style.transform = '';
-    }, 200);
-  }
-  updateDisplay();
-}
-swapBatsmenBtn.addEventListener('click', () => swapStrike(false));
-
-// Update swap button state
-function updateSwapButtonState() {
-  const battingTeam = innings % 2;
-  const canSwap = teams[battingTeam].players.length > 1 &&
-                  wickets < teams[battingTeam].players.length - 1 &&
-                  batsmen.length === 2 &&
-                  !stats[batsmen[0]]?.out && !stats[batsmen[1]]?.out;
-  swapBatsmenBtn.disabled = !canSwap;
-  swapBatsmenBtn.style.opacity = canSwap ? '1' : '0.5';
-}
-
-// Update display
-function updateDisplay() {
-  const battingTeam = innings % 2;
-  const playerCount = teams[battingTeam].players.length;
-
-  if (playerCount === 1 || wickets >= playerCount - 1) {
-    batsman2Card.style.display = 'none';
-    batsman1Name.textContent = batsmen[0] || "All Out";
-    const runs = stats[batsmen[0]]?.runs || 0;
-    const balls = stats[batsmen[0]]?.balls || 0;
-    batsman1Runs.textContent = `${runs}(${balls})`;
-  } else {
-    batsman2Card.style.display = 'block';
-    batsman1Name.textContent = batsmen[0];
-    batsman2Name.textContent = batsmen[1];
-    batsman1Runs.textContent = `${stats[batsmen[0]]?.runs || 0}(${stats[batsmen[0]]?.balls || 0})`;
-    batsman2Runs.textContent = `${stats[batsmen[1]]?.runs || 0}(${stats[batsmen[1]]?.balls || 0})`;
-  }
-
-  updateStrikerIndicator();
-  scoreBoard.textContent = `${score} / ${wickets}`;
-  overDisplay.innerHTML = `Overs: ${Math.floor(totalBalls/6)}.${totalBalls%6}` + (isFreeHit ? ' <span class="free-hit-badge">Free Hit</span>' : '');
-  overProgress.style.width = `${(totalBalls / (overs * 6)) * 100}%`;
-  if (innings === 1) targetProgress.style.width = `${Math.min((score / (target + 1)) * 100, 100)}%`;
-  currentBowlerDisplay.textContent = bowler;
-
-  let s = '';
-  teams[battingTeam].players.forEach(p => {
-    const st = stats[p];
-    const out = st.out ? ` (${st.outType})` : '';
-    s += `${p}: ${st.runs}(${st.balls})${out}\n`;
-  });
-  s += `Extras: ${extras}\nWickets: ${wickets}/${maxWickets}`;
-  playerStatsDiv.textContent = s;
-
-  updateSwapButtonState();
-}
-
-function updateStrikerIndicator() {
-  const rect1 = batsman1Card.getBoundingClientRect();
-  const rect2 = batsman2Card.getBoundingClientRect();
-  const container = batsmenDisplay.getBoundingClientRect();
-  const left = strikerIndex === 0 
-    ? rect1.left - container.left + rect1.width/2 - 10
-    : rect2.left - container.left + rect2.width/2 - 10;
-  strikerIndicator.style.left = `${left}px`;
-}
-
-// Score buttons
-scoreButtonsDiv.querySelectorAll('.score-btn').forEach(btn => {
-  if (btn.id === 'swapBatsmen') return;
-  btn.addEventListener('click', () => {
-    const val = btn.getAttribute('data-run');
-    scoreBoard.classList.add('run-highlight');
-    setTimeout(() => scoreBoard.classList.remove('run-highlight'), 500);
-
-    if (val === 'wide' || val === 'noball') {
-      score++; extras++;
-      if (val === 'noball') isFreeHit = true;
-    } else if (val === 'wicket') {
-      if (!isFreeHit) {
-        stats[batsmen[strikerIndex]].balls++;
-        stats[batsmen[strikerIndex]].out = true;
-        stats[batsmen[strikerIndex]].outType = 'b ' + bowler;
-        wickets++;
-        if (nextBatsmanIndex < teams[innings % 2].players.length) {
-          batsmen[strikerIndex] = teams[innings % 2].players[nextBatsmanIndex++];
-        }
-      } else {
-        isFreeHit = false;
-      }
-      ballsBowled++; totalBalls++;
-    } else {
-      const runs = parseInt(val);
-      score += runs;
-      stats[batsmen[strikerIndex]].runs += runs;
-      stats[batsmen[strikerIndex]].balls++;
-      if (runs === 4) stats[batsmen[strikerIndex]].fours++;
-      if (runs === 6) stats[batsmen[strikerIndex]].sixes++;
-      if (isFreeHit) isFreeHit = false;
-      if (runs % 2 === 1) swapStrike();
-      ballsBowled++; totalBalls++;
-    }
-
-    if (ballsBowled === 6) {
-      ballsBowled = 0;
-      swapStrike(true);
-      showBowlerPopup();
-    }
-
-    if (wickets >= maxWickets || totalBalls >= overs * 6) showSummary("Innings Complete");
-    if (innings === 1 && score > target) showSummary(teams[1].name + " Won!");
-
-    updateDisplay();
-  });
-});
-
-// Bowler popup, summary, etc. (unchanged for brevity — fully working)
-function showBowlerPopup() {
-  bowlerButtonsDiv.innerHTML = '';
-  const bowlingTeam = (innings + 1) % 2;
-  teams[bowlingTeam].players.forEach(p => {
-    let b = document.createElement('button');
-    b.textContent = p;
-    b.onclick = () => { bowler = p; bowlerPopup.style.display = 'none'; updateDisplay(); };
-    bowlerButtonsDiv.appendChild(b);
-  });
-  bowlerPopup.style.display = 'flex';
-}
-changeBowlerBtn.onclick = showBowlerPopup;
-closeBowlerPopup.onclick = () => bowlerPopup.style.display = 'none';
-
-endInningsBtn.onclick = () => showSummary("Innings Declared");
-
-function showSummary(msg) {
-  summaryText.textContent = `${msg}\n\n${teams[innings % 2].name}: ${score}/${wickets} in ${Math.floor(totalBalls/6)}.${totalBalls%6} overs\n\nBatting:\n`;
-  teams[innings % 2].players.forEach(p => {
-    const st = stats[p];
-    if (st.balls > 0 || st.out) {
-      summaryText.textContent += `${p}: ${st.runs}(${st.balls}) ${st.fours ? st.fours + 'x4 ' : ''}${st.sixes ? st.sixes + 'x6 ' : ''}${st.out ? st.outType : ''}\n`;
-    }
-  });
-  summaryText.textContent += `\nExtras: ${extras}`;
-  if (innings === 0) { target = score; nextInningsBtn.style.display = 'inline-block'; }
-  else nextInningsBtn.style.display = 'none';
-  summaryPopup.style.display = 'flex';
-}
-
-closeSummary.onclick = () => summaryPopup.style.display = 'none';
-nextInningsBtn.onclick = () => { innings = 1; summaryPopup.style.display = 'none'; startInnings(); };
-newMatchBtn.onclick = () => location.reload();
-
-window.addEventListener('resize', updateStrikerIndicator);
-</script>
-</body>
-</html>
+    <script>
+        const themes = {
+            digital: [
+                { id: 'pixel', name: 'Pixel', bg: '#000000', color: '#7FFF00', font: 'bold 900 monospace', pattern: 'dots' },
+                { id: 'holo', name: 'Holo', bg: '#FF0000', color: '#000000', font: 'bold 900 sans-serif', pattern: 'blocks' },
+                { id: 'retro', name: 'RETRO', bg: '#000000', color: '#FF8C00', font: 'bold 900 sans-serif', pattern: 'circles' },
+                { id: 'quantum', name: 'Quantum', bg: '#0080FF', color: '#000000', font: 'bold 600 sans-serif' },
+                { id: 'neon', name: 'Neon', bg: '#7FFF00', color: '#000000', font: 'bold 900 sans-serif' },
+                { id: 'led', name: 'LED', bg: '#000000', color: '#FF0000', font: 'bold 900 monospace', pattern: 'dots-red' },
+                { id: 'scifi', name: 'Sci-fi', bg: '#FF8C00', color: '#000000', font: 'bold 900 sans-serif' },
+                { id: 'cyber', name: 'Cyber', bg: '#000000', color: '#00BFFF', font: 'bold 900 sans-serif' },
+            ],
+            action: [
+                { id: 'way', name: 'Way', bg: '#FFFFFF', color: '#000000', font: 'bold 900 sans-serif', pattern: 'chevrons-green' },
+                { id: 'disco', name: 'DISCO', bg: '#9370DB', color: '#000000', font: 'bold 900 sans-serif' },
+                { id: 'taxi', name: 'TAXI', bg: '#FFD700', color: '#000000', font: 'bold 900 sans-serif', pattern: 'checker' },
+                { id: 'mister', name: 'Mister', bg: '#2F4F2F', color: '#FFFFFF', font: '600 serif', pattern: 'lines' },
+                { id: 'sales', name: 'Sales', bg: '#FFFFFF', color: '#000000', font: 'bold 900 sans-serif', pattern: 'starburst' },
+                { id: 'power', name: 'Power', bg: '#00FF00', color: '#000000', font: 'bold 900 sans-serif' },
+                { id: 'wifi', name: 'Wi-Fi', bg: '#0000FF', color: '#FFFFFF', font: 'bold 900 sans-serif', pattern: 'wifi' },
+                { id: 'warning', name: 'Warning', bg: '#FFFFFF', color: '#000000', font: 'bold 900 sans-serif', pattern: 'diagonal-stripes' },
+            ],
+            emotion: [
+                { id: 'express', name: 'Express', bg: '#FFD89B', color: '#4A5568', font: 'italic bold 700 sans-serif' },
+                { id: 'wave', name: 'Wave', bg: '#4A5568', color: '#FFB6C1', font: 'bold 900 sans-serif' },
+                { id: 'romance', name: 'Romance', bg: '#90C9B4', color: '#2D4A3E', font: '600 serif' },
+                { id: 'party', name: 'Party', bg: '#FFD4B8', color: '#008080', font: 'bold 900 sans-serif', pattern: 'confetti' },
+                { id: 'birthday', name: 'Birthday', bg: '#87CEEB', color: '#2F4F4F', font: 'bold 700 monospace' },
+                { id: 'drinks', name: 'Drinks', bg: '#FF9966', color: '#2F4F2F', font: 'bold 900 sans-serif' },
+                { id: 'relaxed', name: 'Relaxed', bg: '#D8BFD8', color: '#4B0082', font: '600 serif' },
+                { id: 'wishes', name: 'Wishes', bg: '#5F9EA0', color: '#483D8B', font: 'bold 900 monospace' },
+            ],
+            winte
