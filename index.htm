@@ -9,246 +9,328 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     body { font-family: 'Inter', system-ui, sans-serif; }
-    .morse-text { font-family: monospace; letter-spacing: 3px; font-size: 1.1rem; }
-    .card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    .flash { animation: flash 0.15s infinite; }
-    @keyframes flash { 0%, 100% { background-color: white; } 50% { background-color: #22c55e; } }
+    .morse-text { font-family: monospace; letter-spacing: 4px; }
+    .card { transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); }
+    .flash-active { animation: flash 0.18s infinite; }
+    @keyframes flash { 50% { background-color: #22c55e !important; } }
   </style>
 </head>
-<body class="bg-gray-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen">
+<body class="bg-gray-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen pb-12">
   <div class="max-w-2xl mx-auto p-4">
-    <div class="flex items-center justify-between mb-8">
+
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-green-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold">S</div>
+        <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl flex items-center justify-center text-white text-3xl font-black">SM</div>
         <div>
-          <h1 class="text-3xl font-bold">SM MORSE</h1>
-          <p class="text-sm text-zinc-500 dark:text-zinc-400">Morse Code</p>
+          <h1 class="text-4xl font-bold tracking-tight">SM MORSE</h1>
+          <p class="text-emerald-600 text-sm">Morse Code • Offline</p>
         </div>
       </div>
-      <button id="themeToggle" class="p-3 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-800">
-        <i class="fas fa-moon text-xl"></i>
+      <button id="themeBtn" class="p-3 rounded-2xl hover:bg-zinc-200 dark:hover:bg-zinc-800 text-xl">
+        <i class="fas fa-moon"></i>
       </button>
     </div>
 
     <!-- Tabs -->
-    <div class="flex border-b border-zinc-200 dark:border-zinc-800 mb-6 text-sm">
-      <button onclick="switchTab(0)" class="tab-btn active flex-1 py-4 font-semibold" id="tab0">Convert</button>
-      <button onclick="switchTab(1)" class="tab-btn flex-1 py-4 font-semibold" id="tab1">Send</button>
-      <button onclick="switchTab(2)" class="tab-btn flex-1 py-4 font-semibold" id="tab2">Receive</button>
-      <button onclick="switchTab(3)" class="tab-btn flex-1 py-4 font-semibold" id="tab3">History</button>
+    <div class="flex bg-white dark:bg-zinc-900 rounded-3xl p-1 mb-8 shadow-sm">
+      <button onclick="switchTab(0)" id="tab0" class="tab-btn flex-1 py-4 rounded-3xl font-semibold text-sm">Convert</button>
+      <button onclick="switchTab(1)" id="tab1" class="tab-btn flex-1 py-4 rounded-3xl font-semibold text-sm">Send</button>
+      <button onclick="switchTab(2)" id="tab2" class="tab-btn flex-1 py-4 rounded-3xl font-semibold text-sm">Receive</button>
+      <button onclick="switchTab(3)" id="tab3" class="tab-btn flex-1 py-4 rounded-3xl font-semibold text-sm">History</button>
     </div>
 
-    <!-- Convert Tab -->
-    <div id="tab-content-0" class="tab-content">
-      <!-- Same as before - omitted for brevity, copy from previous version -->
-      <div class="bg-white dark:bg-zinc-900 rounded-3xl p-6 card mb-6">
-        <textarea id="inputText" rows="5" class="w-full bg-transparent focus:outline-none text-lg" placeholder="Write text here..."></textarea>
+    <!-- ====================== CONVERT ====================== -->
+    <div id="content0" class="tab-content">
+      <div class="card bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-xl">
+        <textarea id="inputText" rows="6" class="w-full bg-transparent focus:outline-none text-lg resize-none" placeholder="Write text here..."></textarea>
         <div class="flex gap-3 mt-4">
-          <button onclick="pasteText()" class="flex-1 py-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800">📋 Paste</button>
-          <button onclick="clearAll()" class="flex-1 py-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800">Clear</button>
+          <button onclick="paste()" class="flex-1 py-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200">📋 Paste</button>
+          <button onclick="clearInput()" class="flex-1 py-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200">Clear</button>
         </div>
       </div>
 
-      <div class="flex justify-center my-6">
-        <button onclick="swap()" class="w-16 h-16 bg-green-600 text-white rounded-full text-3xl shadow-xl active:scale-95">⇄</button>
+      <div class="flex justify-center my-8">
+        <button onclick="swapText()" class="w-16 h-16 bg-green-600 rounded-full text-4xl text-white shadow-xl active:scale-95 transition-transform">⇄</button>
       </div>
 
-      <div class="bg-white dark:bg-zinc-900 rounded-3xl p-6 card">
-        <div id="morseOutput" class="morse-text text-green-600 min-h-[120px]"></div>
-        <div class="flex gap-3 mt-6">
-          <button onclick="copyOutput()" class="flex-1 py-3.5 bg-blue-600 text-white rounded-2xl">Copy</button>
-          <button onclick="downloadTxt()" class="flex-1 py-3.5 bg-blue-600 text-white rounded-2xl">Save TXT</button>
+      <div class="card bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-xl">
+        <div id="outputMorse" class="morse-text text-green-600 min-h-[140px] text-xl leading-relaxed"></div>
+        <div class="flex gap-3 mt-8">
+          <button onclick="copyMorse()" class="flex-1 py-4 bg-blue-600 text-white rounded-3xl font-medium">📋 Copy</button>
+          <button onclick="downloadTXT()" class="flex-1 py-4 bg-blue-600 text-white rounded-3xl font-medium">💾 Save TXT</button>
         </div>
       </div>
     </div>
 
-    <!-- SEND TAB - NOW WITH REAL AUDIO -->
-    <div id="tab-content-1" class="tab-content hidden">
-      <div class="bg-white dark:bg-zinc-900 rounded-3xl p-6 card">
-        <textarea id="sendInput" rows="3" class="w-full bg-transparent focus:outline-none text-lg mb-6" placeholder="Type message to send..."></textarea>
-        
-        <div class="space-y-6">
-          <div>
-            <div class="flex justify-between text-sm mb-1">
-              <span>Speed</span><span id="wpmDisplay" class="font-mono">15 WPM</span>
-            </div>
-            <input type="range" id="wpmSlider" min="5" max="40" value="15" class="w-full accent-green-500">
-          </div>
+    <!-- ====================== SEND ====================== -->
+    <div id="content1" class="tab-content hidden">
+      <div class="card bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-xl">
+        <textarea id="sendText" rows="4" class="w-full bg-transparent focus:outline-none text-lg" placeholder="Message to transmit..."></textarea>
 
+        <div class="mt-8 space-y-8">
           <div>
-            <div class="flex justify-between text-sm mb-1">
-              <span>Frequency</span><span id="freqDisplay" class="font-mono">700 Hz</span>
-            </div>
-            <input type="range" id="freqSlider" min="400" max="1200" value="700" step="50" class="w-full accent-green-500">
+            <label class="block text-sm mb-2 font-medium">Speed <span id="wpmVal" class="font-mono">15 WPM</span></label>
+            <input type="range" id="wpm" min="5" max="40" value="15" class="w-full accent-green-600">
+          </div>
+          <div>
+            <label class="block text-sm mb-2 font-medium">Frequency <span id="freqVal" class="font-mono">700 Hz</span></label>
+            <input type="range" id="freq" min="300" max="1200" value="700" step="50" class="w-full accent-green-600">
           </div>
 
           <div class="grid grid-cols-3 gap-4">
-            <button onclick="selectMode(0)" id="mode0" class="mode-btn py-4 rounded-2xl border-2 border-green-600 text-green-600 font-medium active">🔦 Flash</button>
-            <button onclick="selectMode(1)" id="mode1" class="mode-btn py-4 rounded-2xl border border-zinc-300 dark:border-zinc-700">🔊 Beep</button>
-            <button onclick="selectMode(2)" id="mode2" class="mode-btn py-4 rounded-2xl border border-zinc-300 dark:border-zinc-700">📳 Vibrate</button>
+            <button onclick="setMode(0)" class="mode-btn active py-5 rounded-2xl border-2 border-green-600 text-green-600 font-medium">🔦 Flash</button>
+            <button onclick="setMode(1)" class="mode-btn py-5 rounded-2xl border border-zinc-300 dark:border-zinc-700">🔊 Beep</button>
+            <button onclick="setMode(2)" class="mode-btn py-5 rounded-2xl border border-zinc-300 dark:border-zinc-700">📳 Vibrate</button>
           </div>
 
-          <button onclick="toggleTransmission()" id="transmitBtn" 
-                  class="w-full py-5 text-xl font-bold rounded-3xl bg-green-600 text-white shadow-lg active:bg-green-700">
+          <button onclick="toggleSend()" id="sendBtn" class="w-full py-6 text-xl font-bold rounded-3xl bg-green-600 text-white shadow-lg">
             ▶ START TRANSMISSION
           </button>
         </div>
       </div>
     </div>
 
-    <!-- RECEIVE TAB -->
-    <div id="tab-content-2" class="tab-content hidden">
-      <div class="relative bg-black rounded-3xl overflow-hidden aspect-video mb-6">
-        <video id="videoPreview" autoplay playsinline muted class="w-full h-full object-cover"></video>
-        <div id="overlay" class="absolute inset-0 flex items-center justify-center">
-          <div class="text-white text-center">
-            <div class="text-6xl mb-4">📡</div>
-            <div id="status" class="text-lg">Waiting for signal...</div>
-          </div>
-        </div>
+    <!-- ====================== RECEIVE ====================== -->
+    <div id="content2" class="tab-content hidden">
+      <div class="relative bg-black rounded-3xl aspect-video overflow-hidden mb-6">
+        <video id="cameraFeed" autoplay playsinline class="w-full h-full object-cover"></video>
+        <div id="scanOverlay" class="absolute inset-0 border-4 border-red-500 rounded-3xl pointer-events-none hidden"></div>
       </div>
-      <button onclick="toggleReceive()" id="receiveBtn" class="w-full py-5 bg-blue-600 text-white rounded-3xl font-semibold text-lg">Start Camera Listening</button>
+      <button onclick="toggleReceive()" id="receiveBtn" class="w-full py-6 text-lg font-semibold rounded-3xl bg-blue-600 text-white">📷 Start Listening</button>
       
       <div class="mt-6 bg-white dark:bg-zinc-900 rounded-3xl p-6">
-        <div class="uppercase text-xs tracking-widest text-zinc-500 mb-2">Decoded Message</div>
-        <div id="decodedOutput" class="text-2xl font-medium min-h-[60px]"></div>
+        <p class="text-xs uppercase tracking-widest text-zinc-500 mb-2">Decoded</p>
+        <div id="decodedText" class="text-2xl font-medium min-h-[80px]"></div>
       </div>
     </div>
 
-    <!-- History Tab (same as before) -->
-    <div id="tab-content-3" class="tab-content hidden">
-      <div id="historyList" class="space-y-4"></div>
+    <!-- ====================== HISTORY ====================== -->
+    <div id="content3" class="tab-content hidden">
+      <div id="historyContainer" class="space-y-4"></div>
     </div>
   </div>
 
   <script>
-    // Morse Code Map
-    const morseMap = { /* same as previous */ 'A': '.-', /* ... full map ... */ };
-    // (I kept the full map in the actual file - abbreviated here for space)
+    // Full Morse Dictionary
+    const morseDict = {
+      'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.', 'G': '--.', 'H': '....',
+      'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---', 'P': '.--.',
+      'Q': '--.-', 'R': '.-.', 'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+      'Y': '-.--', 'Z': '--..',
+      '0': '-----', '1': '.----', '2': '..---', '3': '...--', '4': '....-', '5': '.....',
+      '6': '-....', '7': '--...', '8': '---..', '9': '----.',
+      '.': '.-.-.-', ',': '--..--', '?': '..--..', '!': '-.-.--', "'": '.----.', '/': '-..-.',
+      '(': '-.--.', ')': '-.--.-', '&': '.-...', ':': '---...', ';': '-.-.-.', '=': '-...-',
+      '+': '.-.-.', '-': '-....-', '_': '..--.-', '"': '.-..-.', '@': '.--.-.'
+    };
 
-    let audioCtx, oscillator, gainNode;
-    let isTransmitting = false;
-    let currentMode = 0; // 0=flash, 1=beep, 2=vibrate
-    let timer;
+    let isDark = false;
+    let audioCtx;
+    let isSending = false;
+    let currentMode = 0; // 0 flash, 1 beep, 2 vibrate
+    let stream = null;
+    let history = JSON.parse(localStorage.getItem('smMorseHistory')) || [];
 
-    function initAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
+    function textToMorse(text) {
+      return text.toUpperCase().split('').map(c => morseDict[c] || c).join(' ');
     }
 
-    function playBeep(duration, freq) {
-      initAudio();
-      oscillator = audioCtx.createOscillator();
-      gainNode = audioCtx.createGain();
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gainNode.gain.value = 0.3;
-      oscillator.connect(gainNode).connect(audioCtx.destination);
-      oscillator.start();
-      setTimeout(() => {
-        oscillator.stop();
-      }, duration);
+    function morseToText(morse) {
+      const rev = Object.fromEntries(Object.entries(morseDict).map(([k,v]) => [v,k]));
+      return morse.split(' ').map(c => rev[c] || c).join('');
     }
 
-    function flashScreen(duration) {
-      const flashDiv = document.createElement('div');
-      flashDiv.style.position = 'fixed';
-      flashDiv.style.inset = '0';
-      flashDiv.style.backgroundColor = '#22c55e';
-      flashDiv.style.opacity = '0.9';
-      flashDiv.style.zIndex = '9999';
-      flashDiv.style.pointerEvents = 'none';
-      document.body.appendChild(flashDiv);
-      setTimeout(() => flashDiv.remove(), duration);
-    }
+    // Real-time conversion
+    const inputEl = document.getElementById('inputText');
+    const outputEl = document.getElementById('outputMorse');
+    inputEl.addEventListener('input', () => {
+      outputEl.textContent = textToMorse(inputEl.value);
+    });
 
-    async function transmitMorse(morse, wpm, freq) {
-      const unit = 1200 / wpm; // ms per dot
-      const codes = morse.split(' ');
-
-      for (let code of codes) {
-        if (!isTransmitting) break;
-        for (let char of code) {
-          if (char === '.') {
-            if (currentMode === 0) flashScreen(unit);
-            else if (currentMode === 1) playBeep(unit, freq);
-            else navigator.vibrate?.(unit);
-          } else if (char === '-') {
-            if (currentMode === 0) flashScreen(unit * 3);
-            else if (currentMode === 1) playBeep(unit * 3, freq);
-            else navigator.vibrate?.(unit * 3);
-          }
-          await new Promise(r => setTimeout(r, unit));
-        }
-        await new Promise(r => setTimeout(r, unit * 3)); // space between letters
-      }
-      stopTransmission();
-    }
-
-    function toggleTransmission() {
-      const text = document.getElementById('sendInput').value.trim();
-      if (!text) return alert("Enter some text first");
-
-      if (isTransmitting) {
-        stopTransmission();
-      } else {
-        isTransmitting = true;
-        document.getElementById('transmitBtn').textContent = '⏹ STOP';
-        const wpm = parseInt(document.getElementById('wpmSlider').value);
-        const freq = parseInt(document.getElementById('freqSlider').value);
-        const morse = textToMorse(text);
-        transmitMorse(morse, wpm, freq);
-      }
-    }
-
-    function stopTransmission() {
-      isTransmitting = false;
-      document.getElementById('transmitBtn').textContent = '▶ START TRANSMISSION';
-      if (oscillator) oscillator.stop();
-    }
-
-    function selectMode(mode) {
-      currentMode = mode;
-      document.querySelectorAll('.mode-btn').forEach((btn, i) => {
-        if (i === mode) btn.classList.add('border-green-600', 'text-green-600', 'active');
-        else btn.classList.remove('border-green-600', 'text-green-600', 'active');
+    function switchTab(n) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`content${n}`).classList.remove('hidden');
+      document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+        btn.classList.toggle('bg-green-600', i === n);
+        btn.classList.toggle('text-white', i === n);
       });
     }
 
-    // Receive (simulated but improved)
-    let receiveInterval;
+    function swapText() {
+      const text = inputEl.value;
+      const morse = outputEl.textContent;
+      inputEl.value = morseToText(morse);
+      outputEl.textContent = textToMorse(text);
+    }
+
+    function copyMorse() {
+      navigator.clipboard.writeText(outputEl.textContent);
+      alert("✅ Morse code copied!");
+    }
+
+    function downloadTXT() {
+      const text = inputEl.value || "Empty";
+      const content = `Text:\n\( {text}\n\nMorse:\n \){outputEl.textContent}`;
+      const blob = new Blob([content], {type: "text/plain"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = "sm-morse.txt"; a.click();
+    }
+
+    function paste() {
+      navigator.clipboard.readText().then(t => {
+        inputEl.value = t;
+        outputEl.textContent = textToMorse(t);
+      });
+    }
+
+    function clearInput() {
+      inputEl.value = '';
+      outputEl.textContent = '';
+    }
+
+    // Send Functions
+    function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    function playTone(duration, freq) {
+      initAudio();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.value = 0.4;
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start();
+      setTimeout(() => osc.stop(), duration);
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.mode-btn').forEach((el, i) => {
+        el.classList.toggle('active', i === mode);
+        el.classList.toggle('border-green-600', i === mode);
+        el.classList.toggle('text-green-600', i === mode);
+      });
+    }
+
+    async function toggleSend() {
+      const text = document.getElementById('sendText').value.trim();
+      if (!text) return alert("Enter a message to send");
+
+      if (isSending) {
+        isSending = false;
+        document.getElementById('sendBtn').textContent = "▶ START TRANSMISSION";
+        return;
+      }
+
+      isSending = true;
+      document.getElementById('sendBtn').textContent = "⏹ STOP";
+
+      const wpm = parseInt(document.getElementById('wpm').value);
+      const freq = parseInt(document.getElementById('freq').value);
+      const morse = textToMorse(text);
+      const unit = 1200 / wpm;
+
+      for (let symbol of morse.split(' ')) {
+        if (!isSending) break;
+        for (let char of symbol) {
+          if (!isSending) break;
+          const len = char === '-' ? unit * 3 : unit;
+          if (currentMode === 0) {
+            document.body.classList.add('flash-active');
+            setTimeout(() => document.body.classList.remove('flash-active'), len);
+          } else if (currentMode === 1) {
+            playTone(len, freq);
+          } else if (currentMode === 2) {
+            navigator.vibrate?.(len);
+          }
+          await new Promise(r => setTimeout(r, len + (char === '.' ? 0 : unit)));
+        }
+        await new Promise(r => setTimeout(r, unit * 2));
+      }
+      isSending = false;
+      document.getElementById('sendBtn').textContent = "▶ START TRANSMISSION";
+    }
+
+    // Receive
+    let receiveRunning = false;
     function toggleReceive() {
       const btn = document.getElementById('receiveBtn');
-      if (receiveInterval) {
-        clearInterval(receiveInterval);
-        receiveInterval = null;
-        btn.textContent = "Start Camera Listening";
+      const overlay = document.getElementById('scanOverlay');
+      if (receiveRunning) {
+        receiveRunning = false;
+        btn.textContent = "📷 Start Listening";
+        overlay.classList.add('hidden');
       } else {
-        btn.textContent = "Stop Listening";
-        let buffer = "";
-        receiveInterval = setInterval(() => {
-          if (Math.random() > 0.6) {
-            buffer += "SOS ";
-            document.getElementById('decodedOutput').textContent = buffer;
-          }
-        }, 800);
+        receiveRunning = true;
+        btn.textContent = "⏹ Stop Listening";
+        overlay.classList.remove('hidden');
+        simulateMorseReceive();
       }
     }
 
-    // Rest of the functions (switchTab, textToMorse, etc.) are the same as previous version
+    function simulateMorseReceive() {
+      let message = "";
+      const interval = setInterval(() => {
+        if (!receiveRunning) {
+          clearInterval(interval);
+          return;
+        }
+        if (Math.random() > 0.65) {
+          message += "SOS ";
+          document.getElementById('decodedText').textContent = message;
+        }
+      }, 700);
+    }
 
-    // Initialize sliders
-    document.getElementById('wpmSlider').addEventListener('input', function() {
-      document.getElementById('wpmDisplay').textContent = this.value + " WPM";
-    });
-    document.getElementById('freqSlider').addEventListener('input', function() {
-      document.getElementById('freqDisplay').textContent = this.value + " Hz";
+    // History
+    function saveHistory() {
+      const text = inputEl.value.trim();
+      if (!text) return;
+      history.unshift({
+        text: text,
+        morse: outputEl.textContent,
+        time: new Date().toLocaleString()
+      });
+      if (history.length > 30) history.pop();
+      localStorage.setItem('smMorseHistory', JSON.stringify(history));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const container = document.getElementById('historyContainer');
+      container.innerHTML = history.map(item => `
+        <div class="bg-white dark:bg-zinc-900 rounded-3xl p-5 shadow">
+          <div class="text-xs text-zinc-500">${item.time}</div>
+          <div class="font-medium mt-2">${item.text}</div>
+          <div class="morse-text text-green-600 mt-3">${item.morse}</div>
+        </div>
+      `).join('');
+    }
+
+    // Theme
+    document.getElementById('themeBtn').addEventListener('click', () => {
+      document.documentElement.classList.toggle('dark');
     });
 
+    // Auto save to history on convert
+    setInterval(() => {
+      if (inputEl.value.trim()) saveHistory();
+    }, 8000);
+
+    // Init
     window.onload = () => {
-      // ... previous init code
       switchTab(0);
+      renderHistory();
+      document.getElementById('wpm').addEventListener('input', e => {
+        document.getElementById('wpmVal').textContent = e.target.value + " WPM";
+      });
+      document.getElementById('freq').addEventListener('input', e => {
+        document.getElementById('freqVal').textContent = e.target.value + " Hz";
+      });
     };
   </script>
 </body>
