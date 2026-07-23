@@ -1,337 +1,794 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SM MORSE</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"/>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    body { font-family: 'Inter', system-ui, sans-serif; }
-    .morse-text { font-family: monospace; letter-spacing: 4px; }
-    .card { transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); }
-    .flash-active { animation: flash 0.18s infinite; }
-    @keyframes flash { 50% { background-color: #22c55e !important; } }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morse — Signal Lamp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #10151A;
+    --panel: #171F26;
+    --panel-2: #1D262E;
+    --line: #2A353F;
+    --amber: #FFB74D;
+    --amber-dim: #8A6428;
+    --teal: #35D6B8;
+    --teal-dim: #1C6F60;
+    --text: #EAF0F3;
+    --text-dim: #8CA0AC;
+    --danger: #FF6B6B;
+    --radius: 14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(255,183,77,0.06), transparent 60%),
+      radial-gradient(1000px 500px at 100% 0%, rgba(53,214,184,0.05), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter', system-ui, -apple-system, sans-serif;
+    min-height:100vh;
+    padding-bottom:76px;
+  }
+  .mono{font-family:'JetBrains Mono', monospace;}
+  header{
+    padding:22px 20px 16px;
+    display:flex; align-items:center; gap:14px;
+    border-bottom:1px solid var(--line);
+    position:sticky; top:0; background:rgba(16,21,26,0.92); backdrop-filter:blur(8px); z-index:20;
+  }
+  .lamp{
+    width:34px; height:34px; border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, #3a2a12, #0c0c0c 70%);
+    border:2px solid var(--amber-dim);
+    box-shadow: inset 0 0 6px rgba(0,0,0,0.6);
+    transition: box-shadow 0.05s linear, background 0.05s linear;
+    flex-shrink:0;
+  }
+  .lamp.on{
+    background: radial-gradient(circle at 35% 30%, #FFE9B8, var(--amber) 55%);
+    box-shadow: 0 0 18px 6px rgba(255,183,77,0.65), 0 0 40px 14px rgba(255,183,77,0.25);
+    border-color: var(--amber);
+  }
+  header h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:19px; font-weight:600; margin:0; letter-spacing:0.2px;
+  }
+  header p{margin:2px 0 0; font-size:12px; color:var(--text-dim); font-family:'JetBrains Mono',monospace; letter-spacing:0.5px;}
+
+  main{max-width:640px; margin:0 auto; padding:20px 16px 8px;}
+  .screen{display:none;}
+  .screen.active{display:block; animation:fadeIn 0.18s ease;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:16px;
+    margin-bottom:14px;
+  }
+  .card-title{
+    font-size:11px; text-transform:uppercase; letter-spacing:1.4px;
+    color:var(--text-dim); margin:0 0 10px; font-weight:600;
+  }
+  textarea{
+    width:100%; min-height:110px; resize:vertical;
+    background:transparent; border:none; outline:none;
+    color:var(--text); font-size:15px; line-height:1.5;
+    font-family:'Inter', sans-serif;
+  }
+  textarea.mono-field{font-family:'JetBrains Mono', monospace; font-size:14px; color:var(--teal);}
+  textarea::placeholder{color:#5A6B76;}
+
+  .row{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+  button{
+    font-family:'Inter', sans-serif; font-size:13px; font-weight:500;
+    border-radius:10px; border:1px solid var(--line);
+    background:var(--panel-2); color:var(--text);
+    padding:8px 13px; cursor:pointer; transition:all 0.15s ease;
+  }
+  button:hover{border-color:#3A4854; background:#232E37;}
+  button:active{transform:scale(0.97);}
+  .btn-primary{background:var(--teal); color:#06231D; border-color:var(--teal); font-weight:600;}
+  .btn-primary:hover{background:#4EE6C8;}
+  .btn-amber{background:var(--amber); color:#3A2600; border-color:var(--amber); font-weight:600;}
+  .btn-amber:hover{background:#FFC670;}
+  .btn-ghost{background:transparent;}
+  .btn-danger{color:var(--danger); border-color:#4A2A2A;}
+
+  .swap-row{display:flex; justify-content:center; margin:-4px 0 6px;}
+  .swap-btn{
+    width:52px; height:52px; border-radius:50%;
+    background:linear-gradient(160deg, var(--teal), var(--teal-dim));
+    border:none; color:#06231D; font-size:20px; cursor:pointer;
+    box-shadow:0 4px 14px rgba(53,214,184,0.35);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .swap-btn:active{transform:scale(0.94) rotate(180deg); transition:transform 0.25s ease;}
+
+  .slider-row{margin-top:14px;}
+  .slider-label{display:flex; justify-content:space-between; font-size:12.5px; color:var(--text-dim); margin-bottom:6px;}
+  .slider-label b{color:var(--text); font-family:'JetBrains Mono',monospace;}
+  input[type=range]{
+    -webkit-appearance:none; width:100%; height:4px; border-radius:2px;
+    background:var(--line); outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:16px; height:16px; border-radius:50%;
+    background:var(--amber); cursor:pointer; box-shadow:0 0 0 4px rgba(255,183,77,0.15);
+  }
+  .toggle-row{display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--line);}
+  .toggle-row:last-child{border-bottom:none;}
+  .toggle-row span{font-size:14px;}
+  .switch{position:relative; width:42px; height:24px; flex-shrink:0;}
+  .switch input{opacity:0; width:0; height:0;}
+  .slider-toggle{
+    position:absolute; inset:0; background:var(--line); border-radius:24px; cursor:pointer; transition:0.2s;
+  }
+  .slider-toggle::before{
+    content:""; position:absolute; width:18px; height:18px; left:3px; top:3px;
+    background:#fff; border-radius:50%; transition:0.2s;
+  }
+  input:checked + .slider-toggle{background:var(--teal);}
+  input:checked + .slider-toggle::before{transform:translateX(18px);}
+
+  .transport{display:flex; justify-content:center; gap:14px; margin:16px 0 6px;}
+  .transport button{
+    width:60px; height:60px; border-radius:50%; font-size:20px;
+    display:flex; align-items:center; justify-content:center; border:none;
+  }
+  .tp-play{background:linear-gradient(160deg, var(--amber), var(--amber-dim)); color:#3A2600;}
+  .tp-stop{background:var(--panel-2); color:var(--text); border:1px solid var(--line) !important;}
+
+  progress{width:100%; height:6px; border-radius:3px; overflow:hidden; margin-top:12px; accent-color:var(--amber);}
+  .estimate{font-size:12px; color:var(--text-dim); margin-top:6px; font-family:'JetBrains Mono',monospace;}
+
+  /* Receive screen */
+  #videoWrap{position:relative; border-radius:var(--radius); overflow:hidden; background:#000; aspect-ratio:4/3;}
+  video{width:100%; height:100%; object-fit:cover; display:block;}
+  #detectBox{
+    position:absolute; width:90px; height:90px; border:2px solid var(--danger); border-radius:8px;
+    top:50%; left:50%; transform:translate(-50%,-50%); opacity:0; transition:opacity 0.15s;
+    box-shadow:0 0 12px rgba(255,107,107,0.5);
+  }
+  #detectBox.show{opacity:0.85;}
+  .live-morse{font-family:'JetBrains Mono',monospace; color:var(--teal); font-size:15px; min-height:20px; letter-spacing:2px;}
+  .received-box{
+    background:var(--panel-2); border-radius:10px; padding:12px; min-height:70px;
+    font-size:15px; margin-top:10px; white-space:pre-wrap; word-break:break-word;
+  }
+  .cam-msg{color:var(--text-dim); font-size:13px; text-align:center; padding:30px 10px;}
+
+  /* History */
+  .hist-item{
+    background:var(--panel-2); border-radius:10px; padding:12px; margin-bottom:8px;
+    display:flex; justify-content:space-between; gap:10px; align-items:flex-start;
+  }
+  .hist-text{font-weight:600; font-size:14px;}
+  .hist-morse{font-family:'JetBrains Mono',monospace; color:var(--text-dim); font-size:12.5px; margin-top:3px;}
+  .hist-time{font-size:11px; color:#5A6B76; margin-top:4px;}
+  .hist-actions{display:flex; flex-direction:column; gap:6px;}
+  .icon-btn{background:none; border:none; color:var(--text-dim); font-size:16px; cursor:pointer; padding:2px;}
+  .empty-note{color:var(--text-dim); font-size:13px; text-align:center; padding:36px 10px;}
+
+  nav{
+    position:fixed; bottom:0; left:0; right:0;
+    background:rgba(23,31,38,0.95); backdrop-filter:blur(10px);
+    border-top:1px solid var(--line);
+    display:flex; z-index:30;
+  }
+  nav button{
+    flex:1; background:none; border:none; border-radius:0;
+    color:var(--text-dim); font-size:11px; padding:10px 4px 8px;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+  }
+  nav button.active{color:var(--amber);}
+  nav svg{width:20px; height:20px;}
+
+  .note{
+    font-size:12px; color:var(--text-dim); background:rgba(255,183,77,0.06);
+    border:1px solid rgba(255,183,77,0.2); border-radius:10px; padding:10px 12px; margin-bottom:14px;
+  }
+  #flashOverlay{
+    position:fixed; inset:0; background:#fff; opacity:0; pointer-events:none; z-index:999; transition:none;
+  }
+</style>
 </head>
-<body class="bg-gray-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen pb-12">
-  <div class="max-w-2xl mx-auto p-4">
+<body>
 
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-8">
-      <div class="flex items-center gap-3">
-        <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl flex items-center justify-center text-white text-3xl font-black">SM</div>
-        <div>
-          <h1 class="text-4xl font-bold tracking-tight">SM MORSE</h1>
-          <p class="text-emerald-600 text-sm">Morse Code • Offline</p>
-        </div>
-      </div>
-      <button id="themeBtn" class="p-3 rounded-2xl hover:bg-zinc-200 dark:hover:bg-zinc-800 text-xl">
-        <i class="fas fa-moon"></i>
-      </button>
-    </div>
+<div id="flashOverlay"></div>
 
-    <!-- Tabs -->
-    <div class="flex bg-white dark:bg-zinc-900 rounded-3xl p-1 mb-8 shadow-sm">
-      <button onclick="switchTab(0)" id="tab0" class="tab-btn flex-1 py-4 rounded-3xl font-semibold text-sm">Convert</button>
-      <button onclick="switchTab(1)" id="tab1" class="tab-btn flex-1 py-4 rounded-3xl font-semibold text-sm">Send</button>
-      <button onclick="switchTab(2)" id="tab2" class="tab-btn flex-1 py-4 rounded-3xl font-semibold text-sm">Receive</button>
-      <button onclick="switchTab(3)" id="tab3" class="tab-btn flex-1 py-4 rounded-3xl font-semibold text-sm">History</button>
-    </div>
-
-    <!-- ====================== CONVERT ====================== -->
-    <div id="content0" class="tab-content">
-      <div class="card bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-xl">
-        <textarea id="inputText" rows="6" class="w-full bg-transparent focus:outline-none text-lg resize-none" placeholder="Write text here..."></textarea>
-        <div class="flex gap-3 mt-4">
-          <button onclick="paste()" class="flex-1 py-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200">📋 Paste</button>
-          <button onclick="clearInput()" class="flex-1 py-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200">Clear</button>
-        </div>
-      </div>
-
-      <div class="flex justify-center my-8">
-        <button onclick="swapText()" class="w-16 h-16 bg-green-600 rounded-full text-4xl text-white shadow-xl active:scale-95 transition-transform">⇄</button>
-      </div>
-
-      <div class="card bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-xl">
-        <div id="outputMorse" class="morse-text text-green-600 min-h-[140px] text-xl leading-relaxed"></div>
-        <div class="flex gap-3 mt-8">
-          <button onclick="copyMorse()" class="flex-1 py-4 bg-blue-600 text-white rounded-3xl font-medium">📋 Copy</button>
-          <button onclick="downloadTXT()" class="flex-1 py-4 bg-blue-600 text-white rounded-3xl font-medium">💾 Save TXT</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ====================== SEND ====================== -->
-    <div id="content1" class="tab-content hidden">
-      <div class="card bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-xl">
-        <textarea id="sendText" rows="4" class="w-full bg-transparent focus:outline-none text-lg" placeholder="Message to transmit..."></textarea>
-
-        <div class="mt-8 space-y-8">
-          <div>
-            <label class="block text-sm mb-2 font-medium">Speed <span id="wpmVal" class="font-mono">15 WPM</span></label>
-            <input type="range" id="wpm" min="5" max="40" value="15" class="w-full accent-green-600">
-          </div>
-          <div>
-            <label class="block text-sm mb-2 font-medium">Frequency <span id="freqVal" class="font-mono">700 Hz</span></label>
-            <input type="range" id="freq" min="300" max="1200" value="700" step="50" class="w-full accent-green-600">
-          </div>
-
-          <div class="grid grid-cols-3 gap-4">
-            <button onclick="setMode(0)" class="mode-btn active py-5 rounded-2xl border-2 border-green-600 text-green-600 font-medium">🔦 Flash</button>
-            <button onclick="setMode(1)" class="mode-btn py-5 rounded-2xl border border-zinc-300 dark:border-zinc-700">🔊 Beep</button>
-            <button onclick="setMode(2)" class="mode-btn py-5 rounded-2xl border border-zinc-300 dark:border-zinc-700">📳 Vibrate</button>
-          </div>
-
-          <button onclick="toggleSend()" id="sendBtn" class="w-full py-6 text-xl font-bold rounded-3xl bg-green-600 text-white shadow-lg">
-            ▶ START TRANSMISSION
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ====================== RECEIVE ====================== -->
-    <div id="content2" class="tab-content hidden">
-      <div class="relative bg-black rounded-3xl aspect-video overflow-hidden mb-6">
-        <video id="cameraFeed" autoplay playsinline class="w-full h-full object-cover"></video>
-        <div id="scanOverlay" class="absolute inset-0 border-4 border-red-500 rounded-3xl pointer-events-none hidden"></div>
-      </div>
-      <button onclick="toggleReceive()" id="receiveBtn" class="w-full py-6 text-lg font-semibold rounded-3xl bg-blue-600 text-white">📷 Start Listening</button>
-      
-      <div class="mt-6 bg-white dark:bg-zinc-900 rounded-3xl p-6">
-        <p class="text-xs uppercase tracking-widest text-zinc-500 mb-2">Decoded</p>
-        <div id="decodedText" class="text-2xl font-medium min-h-[80px]"></div>
-      </div>
-    </div>
-
-    <!-- ====================== HISTORY ====================== -->
-    <div id="content3" class="tab-content hidden">
-      <div id="historyContainer" class="space-y-4"></div>
-    </div>
+<header>
+  <div class="lamp" id="headerLamp"></div>
+  <div>
+    <h1>Morse</h1>
+    <p>SIGNAL LAMP · OFFLINE</p>
   </div>
+</header>
 
-  <script>
-    // Full Morse Dictionary
-    const morseDict = {
-      'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.', 'G': '--.', 'H': '....',
-      'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---', 'P': '.--.',
-      'Q': '--.-', 'R': '.-.', 'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
-      'Y': '-.--', 'Z': '--..',
-      '0': '-----', '1': '.----', '2': '..---', '3': '...--', '4': '....-', '5': '.....',
-      '6': '-....', '7': '--...', '8': '---..', '9': '----.',
-      '.': '.-.-.-', ',': '--..--', '?': '..--..', '!': '-.-.--', "'": '.----.', '/': '-..-.',
-      '(': '-.--.', ')': '-.--.-', '&': '.-...', ':': '---...', ';': '-.-.-.', '=': '-...-',
-      '+': '.-.-.', '-': '-....-', '_': '..--.-', '"': '.-..-.', '@': '.--.-.'
-    };
+<main>
 
-    let isDark = false;
-    let audioCtx;
-    let isSending = false;
-    let currentMode = 0; // 0 flash, 1 beep, 2 vibrate
-    let stream = null;
-    let history = JSON.parse(localStorage.getItem('smMorseHistory')) || [];
+  <!-- CONVERT -->
+  <section class="screen active" id="screen-convert">
+    <div class="card">
+      <div class="card-title">Text</div>
+      <textarea id="inputText" placeholder="Write text here..."></textarea>
+      <div class="row">
+        <button id="btnPaste">Paste</button>
+        <button id="btnClearText" class="btn-ghost">Clear</button>
+      </div>
+    </div>
 
-    function textToMorse(text) {
-      return text.toUpperCase().split('').map(c => morseDict[c] || c).join(' ');
+    <div class="swap-row">
+      <button class="swap-btn" id="btnSwap" title="Swap Text ⇄ Morse">⇅</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Morse Code</div>
+      <textarea id="outputMorse" class="mono-field" placeholder="Morse code will appear here..."></textarea>
+      <div class="row">
+        <button id="btnCopy">Copy</button>
+        <button id="btnShare">Share</button>
+        <button id="btnDownload">Export .txt</button>
+        <button id="btnSaveHist" class="btn-primary">Save</button>
+      </div>
+    </div>
+
+    <button class="btn-amber" style="width:100%; padding:12px; margin-bottom:10px;" id="goSend">▶ Send Morse Code</button>
+    <button class="btn-primary" style="width:100%; padding:12px;" id="goReceive">◉ Receive via Camera</button>
+  </section>
+
+  <!-- SEND -->
+  <section class="screen" id="screen-send">
+    <div class="card">
+      <div class="card-title">Message</div>
+      <textarea id="sendText" placeholder="Hello World">Hello World</textarea>
+      <div class="estimate" id="estimate">Estimated time: 0s</div>
+      <progress id="progressBar" value="0" max="100"></progress>
+    </div>
+
+    <div class="transport">
+      <button class="tp-play" id="btnPlay">▶</button>
+      <button class="tp-stop" id="btnStop">■</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Transmission Method</div>
+      <div class="toggle-row"><span>Screen Flash</span><label class="switch"><input type="checkbox" id="toggleFlash" checked><span class="slider-toggle"></span></label></div>
+      <div class="toggle-row"><span>Speaker Beep</span><label class="switch"><input type="checkbox" id="toggleAudio" checked><span class="slider-toggle"></span></label></div>
+      <div class="toggle-row"><span>Vibrate <span style="color:#5A6B76">(mobile)</span></span><label class="switch"><input type="checkbox" id="toggleVibrate"><span class="slider-toggle"></span></label></div>
+      <div class="toggle-row"><span>Loop / transmit forever</span><label class="switch"><input type="checkbox" id="toggleLoop"><span class="slider-toggle"></span></label></div>
+    </div>
+
+    <div class="card">
+      <div class="slider-row">
+        <div class="slider-label"><span>Speed</span><b id="wpmVal">15 WPM</b></div>
+        <input type="range" id="seekSpeed" min="5" max="40" value="15">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label"><span>Frequency</span><b id="freqVal">600 Hz</b></div>
+        <input type="range" id="seekFrequency" min="300" max="1200" value="600">
+      </div>
+    </div>
+  </section>
+
+  <!-- RECEIVE -->
+  <section class="screen" id="screen-receive">
+    <div class="note">Point your camera at a blinking light source (phone flashlight, LED). Works best against a dark background with the light 15-30cm from the lens.</div>
+    <div id="videoWrap">
+      <video id="video" playsinline autoplay muted></video>
+      <div id="detectBox"></div>
+    </div>
+    <canvas id="canvas" style="display:none;"></canvas>
+
+    <div class="card" style="margin-top:14px;">
+      <div class="card-title">Live Morse</div>
+      <div class="live-morse" id="liveMorse">&nbsp;</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Received Text</div>
+      <div class="received-box" id="receivedText"></div>
+      <div class="slider-row">
+        <div class="slider-label"><span>Sensitivity</span></div>
+        <input type="range" id="seekSensitivity" min="5" max="95" value="50">
+      </div>
+      <div class="row">
+        <button id="btnCopyRx">Copy</button>
+        <button id="btnShareRx">Share</button>
+        <button id="btnSaveRx" class="btn-primary">Save</button>
+        <button id="btnClearRx" class="btn-ghost">Clear</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- HISTORY -->
+  <section class="screen" id="screen-history">
+    <div class="note">History is kept for this browser session only (in-memory, not saved to disk). Use Export .txt from the Convert screen to keep a permanent copy.</div>
+    <div id="histList"></div>
+    <button class="btn-danger" style="width:100%; padding:11px;" id="btnDeleteAll">Delete all</button>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="screen" id="screen-settings">
+    <div class="card">
+      <div class="card-title">Defaults</div>
+      <div class="slider-row">
+        <div class="slider-label"><span>Default speed</span><b id="defWpmVal">15 WPM</b></div>
+        <input type="range" id="defSpeed" min="5" max="40" value="15">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label"><span>Default frequency</span><b id="defFreqVal">600 Hz</b></div>
+        <input type="range" id="defFreq" min="300" max="1200" value="600">
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">About</div>
+      <p style="font-size:13px; color:var(--text-dim); line-height:1.6; margin:0;">
+        Runs fully offline once loaded — no server, no accounts, no tracking. Works in any modern desktop or mobile browser.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<nav>
+  <button class="nav-btn active" data-target="convert">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7.5,21L3,16.5L4.4,15.1L6.5,17.2V6h2v11.2l2.1,-2.1L12,16.5L7.5,21ZM16.5,21L12,16.5V21H16.5ZM16.5,3L21,7.5L19.6,8.9L17.5,6.8V18h-2V6.8l-2.1,2.1L12,7.5L16.5,3Z"/></svg>
+    Convert
+  </button>
+  <button class="nav-btn" data-target="send">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8,5v14l11,-7z"/></svg>
+    Send
+  </button>
+  <button class="nav-btn" data-target="receive">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9,2L7.17,4H4a2,2 0 0,0 -2,2v12a2,2 0 0,0 2,2h16a2,2 0 0,0 2,-2V6a2,2 0 0,0 -2,-2h-3.17L15,2H9zM12,17a5,5 0 1,1 0,-10 5,5 0 0,1 0,10z"/></svg>
+    Receive
+  </button>
+  <button class="nav-btn" data-target="history">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13,3a9,9 0 0,0 -9,9H1l4,4l4,-4H6a7,7 0 1,1 2,5.3l-1.4,1.5A9,9 0 1,0 13,3zM12,8v5l4.3,2.5l0.7,-1.2l-3.5,-2.1V8z"/></svg>
+    History
+  </button>
+  <button class="nav-btn" data-target="settings">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.4,13a7.6,7.6 0 0,0 0,-2l2.1,-1.6l-2,-3.5l-2.5,1a7.4,7.4 0 0,0 -1.7,-1L15,3h-4l-0.3,2.9a7.4,7.4 0 0,0 -1.7,1l-2.5,-1l-2,3.5L6.6,11a7.6,7.6 0 0,0 0,2l-2.1,1.6l2,3.5l2.5,-1a7.4,7.4 0 0,0 1.7,1L11,21h4l0.3,-2.9a7.4,7.4 0 0,0 1.7,-1l2.5,1l2,-3.5zM13,15.5A3.5,3.5 0 1,1 13,8.5a3.5,3.5 0 0,1 0,7z"/></svg>
+    Settings
+  </button>
+</nav>
+
+<script>
+/* ============ MORSE ENGINE ============ */
+const MORSE_MAP = {
+  A:'.-',B:'-...',C:'-.-.',D:'-..',E:'.',F:'..-.',G:'--.',H:'....',I:'..',J:'.---',
+  K:'-.-',L:'.-..',M:'--',N:'-.',O:'---',P:'.--.',Q:'--.-',R:'.-.',S:'...',T:'-',
+  U:'..-',V:'...-',W:'.--',X:'-..-',Y:'-.--',Z:'--..',
+  '0':'-----','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....',
+  '6':'-....','7':'--...','8':'---..','9':'----.',
+  '.':'.-.-.-',',':'--..--','?':'..--..',"'":'.----.','!':'-.-.--','/':'-..-.',
+  '(':'-.--.',')':'-.--.-','&':'.-...',':':'---...',';':'-.-.-.','=':'-...-',
+  '+':'.-.-.','-':'-....-','_':'..--.-','"':'.-..-.','$':'...-..-','@':'.--.-.'
+};
+const REVERSE_MAP = Object.fromEntries(Object.entries(MORSE_MAP).map(([k,v])=>[v,k]));
+
+function encode(text){
+  if(!text) return '';
+  const words = text.trim().toUpperCase().split(/\s+/);
+  const out = [];
+  for(const word of words){
+    const letters = [];
+    for(const ch of word){
+      if(MORSE_MAP[ch]) letters.push(MORSE_MAP[ch]);
     }
+    if(letters.length) out.push(letters.join(' '));
+  }
+  return out.join(' / ');
+}
 
-    function morseToText(morse) {
-      const rev = Object.fromEntries(Object.entries(morseDict).map(([k,v]) => [v,k]));
-      return morse.split(' ').map(c => rev[c] || c).join('');
+function decode(morse){
+  if(!morse) return '';
+  const words = morse.trim().replace(/\s*\/\s*/g,' / ').split(' / ');
+  const out = [];
+  for(const word of words){
+    let str = '';
+    for(const letter of word.trim().split(/\s+/)){
+      if(REVERSE_MAP[letter]) str += REVERSE_MAP[letter];
     }
+    out.push(str);
+  }
+  return out.join(' ');
+}
 
-    // Real-time conversion
-    const inputEl = document.getElementById('inputText');
-    const outputEl = document.getElementById('outputMorse');
-    inputEl.addEventListener('input', () => {
-      outputEl.textContent = textToMorse(inputEl.value);
+/* ============ TIMING (PARIS standard) ============ */
+function unitMs(wpm){ return 1200 / Math.max(1,wpm); }
+function dotMs(wpm){ return unitMs(wpm); }
+function dashMs(wpm){ return unitMs(wpm) * 3; }
+function intraGapMs(wpm){ return unitMs(wpm); }
+function letterGapMs(wpm){ return unitMs(wpm) * 3; }
+function wordGapMs(wpm){ return unitMs(wpm) * 7; }
+
+function buildEvents(morse, wpm){
+  const events = [];
+  const words = morse.trim().replace(/\s*\/\s*/g,' / ').split(' / ').filter(w=>w.length);
+  words.forEach((word,wi)=>{
+    const letters = word.trim().split(/\s+/);
+    letters.forEach((letter,li)=>{
+      for(let i=0;i<letter.length;i++){
+        const sym = letter[i];
+        events.push([true, sym==='-'?dashMs(wpm):dotMs(wpm)]);
+        if(i<letter.length-1) events.push([false, intraGapMs(wpm)]);
+      }
+      if(li<letters.length-1) events.push([false, letterGapMs(wpm)]);
     });
+    if(wi<words.length-1) events.push([false, wordGapMs(wpm)]);
+  });
+  return events;
+}
 
-    function switchTab(n) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.getElementById(`content${n}`).classList.remove('hidden');
-      document.querySelectorAll('.tab-btn').forEach((btn, i) => {
-        btn.classList.toggle('bg-green-600', i === n);
-        btn.classList.toggle('text-white', i === n);
-      });
+function estimateDuration(morse, wpm){
+  return buildEvents(morse, wpm).reduce((sum,e)=>sum+e[1],0);
+}
+
+function formatMs(ms){
+  const s = Math.round(ms/1000);
+  const m = Math.floor(s/60);
+  const sec = s % 60;
+  return m>0 ? `${m}m ${sec}s` : `${sec}s`;
+}
+
+/* ============ NAVIGATION ============ */
+const screens = document.querySelectorAll('.screen');
+const navBtns = document.querySelectorAll('.nav-btn');
+navBtns.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const target = btn.dataset.target;
+    screens.forEach(s=>s.classList.toggle('active', s.id === 'screen-'+target));
+    navBtns.forEach(b=>b.classList.toggle('active', b===btn));
+    if(target === 'receive') startCamera(); else stopCamera();
+  });
+});
+document.getElementById('goSend').addEventListener('click', ()=>{
+  document.getElementById('sendText').value = document.getElementById('inputText').value || 'Hello World';
+  navBtns[1].click();
+});
+document.getElementById('goReceive').addEventListener('click', ()=> navBtns[2].click());
+
+/* ============ CONVERT SCREEN ============ */
+const inputText = document.getElementById('inputText');
+const outputMorse = document.getElementById('outputMorse');
+let textIsSource = true;
+inputText.addEventListener('focus', ()=> textIsSource = true);
+outputMorse.addEventListener('focus', ()=> textIsSource = false);
+
+document.getElementById('btnSwap').addEventListener('click', ()=>{
+  if(textIsSource){ outputMorse.value = encode(inputText.value); }
+  else { inputText.value = decode(outputMorse.value); }
+  textIsSource = !textIsSource;
+});
+document.getElementById('btnClearText').addEventListener('click', ()=>{
+  inputText.value=''; outputMorse.value='';
+});
+document.getElementById('btnPaste').addEventListener('click', async ()=>{
+  try{ inputText.value = await navigator.clipboard.readText(); }catch(e){ alert('Clipboard access denied by browser.'); }
+});
+document.getElementById('btnCopy').addEventListener('click', ()=>{
+  if(!outputMorse.value) return;
+  navigator.clipboard.writeText(outputMorse.value);
+  toast('Copied');
+});
+document.getElementById('btnShare').addEventListener('click', async ()=>{
+  if(!outputMorse.value) return;
+  if(navigator.share){ try{ await navigator.share({text:outputMorse.value}); }catch(e){} }
+  else { navigator.clipboard.writeText(outputMorse.value); toast('Share not supported — copied instead'); }
+});
+document.getElementById('btnDownload').addEventListener('click', ()=>{
+  downloadTxt(outputMorse.value || '', 'morse-code.txt');
+});
+document.getElementById('btnSaveHist').addEventListener('click', ()=>{
+  if(!inputText.value && !outputMorse.value) return;
+  saveHistory(inputText.value, outputMorse.value);
+  toast('Saved to history');
+});
+
+function downloadTxt(content, filename){
+  const blob = new Blob([content], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+let toastTimer;
+function toast(msg){
+  let el = document.getElementById('toastEl');
+  if(!el){
+    el = document.createElement('div');
+    el.id='toastEl';
+    el.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#232E37;color:#EAF0F3;padding:9px 16px;border-radius:20px;font-size:13px;z-index:1000;box-shadow:0 4px 16px rgba(0,0,0,0.4);border:1px solid #2A353F;';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.opacity='1';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> el.style.opacity='0', 1600);
+}
+
+/* ============ SEND SCREEN ============ */
+const sendText = document.getElementById('sendText');
+const seekSpeed = document.getElementById('seekSpeed');
+const seekFrequency = document.getElementById('seekFrequency');
+const wpmVal = document.getElementById('wpmVal');
+const freqVal = document.getElementById('freqVal');
+const estimate = document.getElementById('estimate');
+const progressBar = document.getElementById('progressBar');
+const headerLamp = document.getElementById('headerLamp');
+const flashOverlay = document.getElementById('flashOverlay');
+
+function updateEstimate(){
+  const morse = encode(sendText.value);
+  estimate.textContent = 'Estimated time: ' + formatMs(estimateDuration(morse, +seekSpeed.value));
+}
+sendText.addEventListener('input', updateEstimate);
+seekSpeed.addEventListener('input', ()=>{ wpmVal.textContent = seekSpeed.value+' WPM'; updateEstimate(); });
+seekFrequency.addEventListener('input', ()=> freqVal.textContent = seekFrequency.value+' Hz');
+updateEstimate();
+
+let audioCtx;
+let transmitTimer = null;
+let transmitting = false;
+
+function lampState(on){
+  headerLamp.classList.toggle('on', on);
+  if(document.getElementById('toggleFlash').checked){
+    flashOverlay.style.opacity = on ? '1' : '0';
+  }
+}
+
+function beep(freqHz, durationMs){
+  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.frequency.value = freqHz;
+  osc.type = 'sine';
+  gain.gain.value = 0.35;
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + durationMs/1000);
+}
+
+function playEvents(events, idx, totalOnCount, doneOnCount, loop, wpm, freq){
+  if(!transmitting) { lampState(false); return; }
+  if(idx >= events.length){
+    lampState(false);
+    progressBar.value = 100;
+    if(loop && transmitting){
+      transmitTimer = setTimeout(()=> playEvents(events,0,totalOnCount,0,true,wpm,freq), 500);
+    } else {
+      transmitting = false;
     }
+    return;
+  }
+  const [isOn, dur] = events[idx];
+  lampState(isOn);
+  if(isOn && document.getElementById('toggleAudio').checked){
+    beep(freq, dur);
+  }
+  if(isOn){
+    doneOnCount++;
+    progressBar.value = Math.round((doneOnCount/totalOnCount)*100);
+  }
+  transmitTimer = setTimeout(()=> playEvents(events, idx+1, totalOnCount, doneOnCount, loop, wpm, freq), dur);
+}
 
-    function swapText() {
-      const text = inputEl.value;
-      const morse = outputEl.textContent;
-      inputEl.value = morseToText(morse);
-      outputEl.textContent = textToMorse(text);
+document.getElementById('btnPlay').addEventListener('click', ()=>{
+  if(transmitting) return;
+  const morse = encode(sendText.value);
+  if(!morse) return;
+  transmitting = true;
+  const wpm = +seekSpeed.value;
+  const freq = +seekFrequency.value;
+  const events = buildEvents(morse, wpm);
+  const totalOn = events.filter(e=>e[0]).length || 1;
+  progressBar.value = 0;
+
+  if(document.getElementById('toggleVibrate').checked && navigator.vibrate){
+    const pattern = [0];
+    events.forEach(e=> pattern.push(e[1]));
+    navigator.vibrate(pattern);
+  }
+  playEvents(events, 0, totalOn, 0, document.getElementById('toggleLoop').checked, wpm, freq);
+});
+
+document.getElementById('btnStop').addEventListener('click', ()=>{
+  transmitting = false;
+  clearTimeout(transmitTimer);
+  lampState(false);
+  progressBar.value = 0;
+  if(navigator.vibrate) navigator.vibrate(0);
+});
+
+/* ============ RECEIVE SCREEN (camera light-pulse decoder) ============ */
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d', {willReadFrequently:true});
+const detectBox = document.getElementById('detectBox');
+const liveMorseEl = document.getElementById('liveMorse');
+const receivedTextEl = document.getElementById('receivedText');
+const seekSensitivity = document.getElementById('seekSensitivity');
+
+let camStream = null;
+let camRaf = null;
+let decodedText = '';
+
+// Decoder state (ported from the Android PulseDecoder logic)
+let runningMin = 255, runningMax = 0;
+let isOn = false, stateStartMs = -1;
+let unitEstimateMs = 100;
+let currentLetter = '';
+const CALIBRATION_DECAY = 0.98;
+const UNIT_ADAPT_RATE = 0.2;
+
+function resetDecoder(){
+  runningMin=255; runningMax=0; isOn=false; stateStartMs=-1; unitEstimateMs=100; currentLetter='';
+  liveMorseEl.textContent = '\u00A0';
+}
+
+function onBrightnessSample(brightness, t){
+  runningMax = Math.max(brightness, runningMax*CALIBRATION_DECAY + brightness*(1-CALIBRATION_DECAY));
+  runningMin = Math.min(brightness, runningMin*CALIBRATION_DECAY + brightness*(1-CALIBRATION_DECAY));
+  const sensitivity = seekSensitivity.value/100;
+  const threshold = runningMin + (runningMax-runningMin)*sensitivity;
+  const contrast = runningMax - runningMin;
+  const lightOn = brightness >= threshold && contrast > 8;
+
+  detectBox.classList.toggle('show', lightOn);
+
+  if(stateStartMs < 0){ stateStartMs = t; isOn = lightOn; return; }
+  if(lightOn !== isOn){
+    const duration = t - stateStartMs;
+    handleTransition(isOn, duration);
+    isOn = lightOn;
+    stateStartMs = t;
+  }
+}
+
+function handleTransition(wasOn, duration){
+  if(wasOn){
+    if(duration < 20) return;
+    const units = duration/unitEstimateMs;
+    const symbol = units >= 2 ? '-' : '.';
+    currentLetter += symbol;
+    const implied = symbol==='-' ? duration/3 : duration;
+    unitEstimateMs = unitEstimateMs*(1-UNIT_ADAPT_RATE) + implied*UNIT_ADAPT_RATE;
+    unitEstimateMs = Math.max(30, Math.min(400, unitEstimateMs));
+    liveMorseEl.textContent = currentLetter;
+  } else {
+    if(duration < 20) return;
+    const units = duration/unitEstimateMs;
+    if(units >= 5){ flushLetter(); decodedText += ' '; renderReceived(); }
+    else if(units >= 2){ flushLetter(); }
+  }
+}
+
+function flushLetter(){
+  if(!currentLetter) return;
+  const decoded = REVERSE_MAP[currentLetter];
+  if(decoded) decodedText += decoded;
+  currentLetter = '';
+  liveMorseEl.textContent = '\u00A0';
+  renderReceived();
+}
+
+function renderReceived(){ receivedTextEl.textContent = decodedText; }
+
+async function startCamera(){
+  if(camStream) return;
+  try{
+    camStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    video.srcObject = camStream;
+    resetDecoder();
+    analyzeFrame();
+  }catch(e){
+    document.getElementById('videoWrap').innerHTML = '<div class="cam-msg">Camera access denied or unavailable.<br>Grant camera permission to receive Morse code.</div>';
+  }
+}
+
+function stopCamera(){
+  if(camRaf) cancelAnimationFrame(camRaf);
+  if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
+}
+
+function analyzeFrame(){
+  if(video.readyState === video.HAVE_ENOUGH_DATA){
+    const w = 80, h = 60; // small sample size = fast
+    canvas.width = w; canvas.height = h;
+    ctx.drawImage(video, 0, 0, w, h);
+    const frame = ctx.getImageData(w*0.35, h*0.35, w*0.3, h*0.3);
+    let sum = 0;
+    for(let i=0;i<frame.data.length;i+=4){
+      // luma approximation
+      sum += 0.299*frame.data[i] + 0.587*frame.data[i+1] + 0.114*frame.data[i+2];
     }
+    const avg = sum / (frame.data.length/4);
+    onBrightnessSample(avg, performance.now());
+  }
+  camRaf = requestAnimationFrame(analyzeFrame);
+}
 
-    function copyMorse() {
-      navigator.clipboard.writeText(outputEl.textContent);
-      alert("✅ Morse code copied!");
-    }
+document.getElementById('btnCopyRx').addEventListener('click', ()=>{
+  if(!decodedText) return;
+  navigator.clipboard.writeText(decodedText); toast('Copied');
+});
+document.getElementById('btnShareRx').addEventListener('click', async ()=>{
+  if(!decodedText) return;
+  if(navigator.share){ try{ await navigator.share({text:decodedText}); }catch(e){} }
+  else { navigator.clipboard.writeText(decodedText); toast('Share not supported — copied instead'); }
+});
+document.getElementById('btnSaveRx').addEventListener('click', ()=>{
+  if(!decodedText) return;
+  saveHistory(decodedText, '');
+  toast('Saved to history');
+});
+document.getElementById('btnClearRx').addEventListener('click', ()=>{
+  decodedText=''; renderReceived(); resetDecoder();
+});
 
-    function downloadTXT() {
-      const text = inputEl.value || "Empty";
-      const content = `Text:\n\( {text}\n\nMorse:\n \){outputEl.textContent}`;
-      const blob = new Blob([content], {type: "text/plain"});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = "sm-morse.txt"; a.click();
-    }
+/* ============ HISTORY (in-memory for this session) ============ */
+let history = [];
+const histList = document.getElementById('histList');
 
-    function paste() {
-      navigator.clipboard.readText().then(t => {
-        inputEl.value = t;
-        outputEl.textContent = textToMorse(t);
-      });
-    }
+function saveHistory(text, morse){
+  history.unshift({id:Date.now(), text, morse, time:new Date(), fav:false});
+  renderHistory();
+}
+function renderHistory(){
+  if(!history.length){
+    histList.innerHTML = '<div class="empty-note">No history yet — conversions you save will appear here for this session.</div>';
+    return;
+  }
+  histList.innerHTML = history.map(h=>`
+    <div class="hist-item" data-id="${h.id}">
+      <div style="flex:1; min-width:0;">
+        <div class="hist-text">${escapeHtml(h.text || '(morse only)')}</div>
+        <div class="hist-morse">${escapeHtml(h.morse || '')}</div>
+        <div class="hist-time">${h.time.toLocaleString()}</div>
+      </div>
+      <div class="hist-actions">
+        <button class="icon-btn fav-btn">${h.fav ? '★' : '☆'}</button>
+        <button class="icon-btn del-btn">🗑</button>
+      </div>
+    </div>`).join('');
 
-    function clearInput() {
-      inputEl.value = '';
-      outputEl.textContent = '';
-    }
-
-    // Send Functions
-    function initAudio() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-
-    function playTone(duration, freq) {
-      initAudio();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      gain.gain.value = 0.4;
-      osc.connect(gain).connect(audioCtx.destination);
-      osc.start();
-      setTimeout(() => osc.stop(), duration);
-    }
-
-    function setMode(mode) {
-      currentMode = mode;
-      document.querySelectorAll('.mode-btn').forEach((el, i) => {
-        el.classList.toggle('active', i === mode);
-        el.classList.toggle('border-green-600', i === mode);
-        el.classList.toggle('text-green-600', i === mode);
-      });
-    }
-
-    async function toggleSend() {
-      const text = document.getElementById('sendText').value.trim();
-      if (!text) return alert("Enter a message to send");
-
-      if (isSending) {
-        isSending = false;
-        document.getElementById('sendBtn').textContent = "▶ START TRANSMISSION";
-        return;
-      }
-
-      isSending = true;
-      document.getElementById('sendBtn').textContent = "⏹ STOP";
-
-      const wpm = parseInt(document.getElementById('wpm').value);
-      const freq = parseInt(document.getElementById('freq').value);
-      const morse = textToMorse(text);
-      const unit = 1200 / wpm;
-
-      for (let symbol of morse.split(' ')) {
-        if (!isSending) break;
-        for (let char of symbol) {
-          if (!isSending) break;
-          const len = char === '-' ? unit * 3 : unit;
-          if (currentMode === 0) {
-            document.body.classList.add('flash-active');
-            setTimeout(() => document.body.classList.remove('flash-active'), len);
-          } else if (currentMode === 1) {
-            playTone(len, freq);
-          } else if (currentMode === 2) {
-            navigator.vibrate?.(len);
-          }
-          await new Promise(r => setTimeout(r, len + (char === '.' ? 0 : unit)));
-        }
-        await new Promise(r => setTimeout(r, unit * 2));
-      }
-      isSending = false;
-      document.getElementById('sendBtn').textContent = "▶ START TRANSMISSION";
-    }
-
-    // Receive
-    let receiveRunning = false;
-    function toggleReceive() {
-      const btn = document.getElementById('receiveBtn');
-      const overlay = document.getElementById('scanOverlay');
-      if (receiveRunning) {
-        receiveRunning = false;
-        btn.textContent = "📷 Start Listening";
-        overlay.classList.add('hidden');
-      } else {
-        receiveRunning = true;
-        btn.textContent = "⏹ Stop Listening";
-        overlay.classList.remove('hidden');
-        simulateMorseReceive();
-      }
-    }
-
-    function simulateMorseReceive() {
-      let message = "";
-      const interval = setInterval(() => {
-        if (!receiveRunning) {
-          clearInterval(interval);
-          return;
-        }
-        if (Math.random() > 0.65) {
-          message += "SOS ";
-          document.getElementById('decodedText').textContent = message;
-        }
-      }, 700);
-    }
-
-    // History
-    function saveHistory() {
-      const text = inputEl.value.trim();
-      if (!text) return;
-      history.unshift({
-        text: text,
-        morse: outputEl.textContent,
-        time: new Date().toLocaleString()
-      });
-      if (history.length > 30) history.pop();
-      localStorage.setItem('smMorseHistory', JSON.stringify(history));
-      renderHistory();
-    }
-
-    function renderHistory() {
-      const container = document.getElementById('historyContainer');
-      container.innerHTML = history.map(item => `
-        <div class="bg-white dark:bg-zinc-900 rounded-3xl p-5 shadow">
-          <div class="text-xs text-zinc-500">${item.time}</div>
-          <div class="font-medium mt-2">${item.text}</div>
-          <div class="morse-text text-green-600 mt-3">${item.morse}</div>
-        </div>
-      `).join('');
-    }
-
-    // Theme
-    document.getElementById('themeBtn').addEventListener('click', () => {
-      document.documentElement.classList.toggle('dark');
+  histList.querySelectorAll('.hist-item').forEach(el=>{
+    const id = +el.dataset.id;
+    el.querySelector('.fav-btn').addEventListener('click', ()=>{
+      const item = history.find(h=>h.id===id); item.fav = !item.fav; renderHistory();
     });
+    el.querySelector('.del-btn').addEventListener('click', ()=>{
+      history = history.filter(h=>h.id!==id); renderHistory();
+    });
+  });
+}
+function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+document.getElementById('btnDeleteAll').addEventListener('click', ()=>{
+  if(confirm('Delete all history for this session?')){ history=[]; renderHistory(); }
+});
+renderHistory();
 
-    // Auto save to history on convert
-    setInterval(() => {
-      if (inputEl.value.trim()) saveHistory();
-    }, 8000);
-
-    // Init
-    window.onload = () => {
-      switchTab(0);
-      renderHistory();
-      document.getElementById('wpm').addEventListener('input', e => {
-        document.getElementById('wpmVal').textContent = e.target.value + " WPM";
-      });
-      document.getElementById('freq').addEventListener('input', e => {
-        document.getElementById('freqVal').textContent = e.target.value + " Hz";
-      });
-    };
-  </script>
+/* ============ SETTINGS ============ */
+const defSpeed = document.getElementById('defSpeed');
+const defFreq = document.getElementById('defFreq');
+defSpeed.addEventListener('input', ()=>{
+  document.getElementById('defWpmVal').textContent = defSpeed.value+' WPM';
+  seekSpeed.value = defSpeed.value; wpmVal.textContent = defSpeed.value+' WPM'; updateEstimate();
+});
+defFreq.addEventListener('input', ()=>{
+  document.getElementById('defFreqVal').textContent = defFreq.value+' Hz';
+  seekFrequency.value = defFreq.value; freqVal.textContent = defFreq.value+' Hz';
+});
+</script>
 </body>
 </html>
