@@ -151,11 +151,16 @@
   #videoWrap{position:relative; border-radius:var(--radius); overflow:hidden; background:#000; aspect-ratio:4/3;}
   video{width:100%; height:100%; object-fit:cover; display:block;}
   #detectBox{
-    position:absolute; width:90px; height:90px; border:2px solid var(--danger); border-radius:8px;
-    top:50%; left:50%; transform:translate(-50%,-50%); opacity:0; transition:opacity 0.15s;
-    box-shadow:0 0 12px rgba(255,107,107,0.5);
+    position:absolute; width:110px; height:110px; border:2px solid var(--amber-dim); border-radius:8px;
+    top:50%; left:50%; transform:translate(-50%,-50%); opacity:0.55; transition:opacity 0.1s, border-color 0.1s;
+    box-shadow:0 0 10px rgba(255,183,77,0.25);
   }
-  #detectBox.show{opacity:0.85;}
+  #detectBox::after{
+    content:""; position:absolute; width:6px; height:6px; border-radius:50%;
+    background:var(--amber-dim); top:50%; left:50%; transform:translate(-50%,-50%);
+  }
+  #detectBox.show{opacity:1; border-color:var(--danger); box-shadow:0 0 16px rgba(255,107,107,0.55);}
+  #detectBox.show::after{background:var(--danger);}
   .live-morse{font-family:'JetBrains Mono',monospace; color:var(--teal); font-size:15px; min-height:20px; letter-spacing:2px;}
   .received-box{
     background:var(--panel-2); border-radius:10px; padding:12px; min-height:70px;
@@ -281,7 +286,7 @@
 
   <!-- RECEIVE -->
   <section class="screen" id="screen-receive">
-    <div class="note">Point your camera at a blinking light source (phone flashlight, LED). Works best against a dark background with the light 15-30cm from the lens.</div>
+    <div class="note">Line up the blinking light inside the box in the middle of the frame — the box stays fixed so you just aim your camera, no auto-focus hunting. Set the same Speed here as the Send screen for a reliable lock.</div>
     <div id="videoWrap">
       <video id="video" playsinline autoplay muted></video>
       <div id="detectBox"></div>
@@ -291,12 +296,16 @@
     <div class="card" style="margin-top:14px;">
       <div class="card-title">Live Morse</div>
       <div class="live-morse" id="liveMorse">&nbsp;</div>
-      <div id="estWpm" style="font-size:11.5px; color:var(--text-dim); margin-top:6px; font-family:'JetBrains Mono',monospace;">Detected speed: —</div>
     </div>
 
     <div class="card">
       <div class="card-title">Received Text</div>
       <div class="received-box" id="receivedText"></div>
+      <div class="slider-row">
+        <div class="slider-label"><span>Speed</span><b id="rxWpmVal">15 WPM</b></div>
+        <input type="range" id="seekRxSpeed" min="5" max="40" value="15">
+        <div style="font-size:11px; color:var(--text-dim); margin-top:5px;">Match the sender's speed — timing is fixed to this value instead of guessing, so it locks on faster and more reliably.</div>
+      </div>
       <div class="slider-row">
         <div class="slider-label"><span>Sensitivity</span></div>
         <input type="range" id="seekSensitivity" min="5" max="95" value="50">
@@ -750,25 +759,40 @@ const detectBox = document.getElementById('detectBox');
 const liveMorseEl = document.getElementById('liveMorse');
 const receivedTextEl = document.getElementById('receivedText');
 const seekSensitivity = document.getElementById('seekSensitivity');
-const estWpmEl = document.getElementById('estWpm');
+const seekRxSpeed = document.getElementById('seekRxSpeed');
+const rxWpmVal = document.getElementById('rxWpmVal');
 
 let camStream = null;
 let camRaf = null;
 let decodedText = '';
 
-// Decoder state (ported from the Android PulseDecoder logic)
+// Decoder state. Unlike the earlier auto-adaptive version, the unit length (dot
+// duration) is now FIXED from the Speed slider rather than guessed and drifted —
+// simpler to get right and more reliable, as long as sender and receiver agree on
+// a speed. Only the brightness threshold auto-calibrates (ambient light varies
+// frame to frame; speed doesn't need to be inferred if the user just sets it).
 let runningMin = 255, runningMax = 0;
 let isOn = false, stateStartMs = -1;
-let unitEstimateMs = 100;
 let currentLetter = '';
 const CALIBRATION_DECAY = 0.98;
-const UNIT_ADAPT_RATE = 0.2;
+
+function unitEstimateMs(){ return 1200 / Math.max(1, +seekRxSpeed.value); }
+
+seekRxSpeed.addEventListener('input', ()=> rxWpmVal.textContent = seekRxSpeed.value+' WPM');
+
+// Keep Receive's default speed matched to whatever Send is set to, so lining the
+// two screens up is a one-glance job rather than two separate settings to remember.
+function syncRxSpeedFromSend(){
+  seekRxSpeed.value = seekSpeed.value;
+  rxWpmVal.textContent = seekSpeed.value+' WPM';
+}
+seekSpeed.addEventListener('input', syncRxSpeedFromSend);
+syncRxSpeedFromSend();
 
 function resetDecoder(){
-  runningMin=255; runningMax=0; isOn=false; stateStartMs=-1; unitEstimateMs=100; currentLetter='';
+  runningMin=255; runningMax=0; isOn=false; stateStartMs=-1; currentLetter='';
   smoothedBrightness = null;
   liveMorseEl.textContent = '\u00A0';
-  estWpmEl.textContent = 'Detected speed: —';
 }
 
 function onBrightnessSample(brightness, t){
@@ -791,19 +815,16 @@ function onBrightnessSample(brightness, t){
 }
 
 function handleTransition(wasOn, duration){
+  const unit = unitEstimateMs();
   if(wasOn){
     if(duration < 20) return;
-    const units = duration/unitEstimateMs;
+    const units = duration/unit;
     const symbol = units >= 2 ? '-' : '.';
     currentLetter += symbol;
-    const implied = symbol==='-' ? duration/3 : duration;
-    unitEstimateMs = unitEstimateMs*(1-UNIT_ADAPT_RATE) + implied*UNIT_ADAPT_RATE;
-    unitEstimateMs = Math.max(30, Math.min(400, unitEstimateMs));
     liveMorseEl.textContent = currentLetter;
-    estWpmEl.textContent = 'Detected speed: ~' + Math.round(1200/unitEstimateMs) + ' WPM';
   } else {
     if(duration < 20) return;
-    const units = duration/unitEstimateMs;
+    const units = duration/unit;
     if(units >= 5){ flushLetter(); decodedText += ' '; renderReceived(); }
     else if(units >= 2){ flushLetter(); }
   }
@@ -837,62 +858,40 @@ function stopCamera(){
   if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
 }
 
-// Smooths raw per-frame brightness so single noisy sensor frames don't register as
-// spurious transitions; light-weight exponential filter, not a full moving-average
-// buffer, so it stays real-time.
+// Fixed sampling region: always the box in the center of the frame (matches the
+// visual #detectBox target). No auto-tracking/auto-focus hunting — the user aims
+// the camera so the light sits in the box, which is simpler and more predictable
+// than a moving detector, especially one-handed.
+const CENTER_FRACTION = 0.35; // portion of frame width/height sampled, centered
+
+// Light-weight exponential smoothing so single noisy camera frames don't register
+// as spurious transitions; not a full moving-average buffer, so it stays real-time.
 let smoothedBrightness = null;
 const SMOOTHING = 0.45; // 0 = no smoothing, 1 = frozen
 
-// Divides the frame into a grid, finds the brightest cell, and feeds *that* cell's
-// brightness into the decoder — much more robust than a fixed center crop if the
-// light source isn't perfectly centered, and lets the red box actually track it.
-const GRID_COLS = 6, GRID_ROWS = 4;
-
 function analyzeFrame(){
   if(video.readyState === video.HAVE_ENOUGH_DATA){
-    const w = 96, h = 64; // small sample size = fast, still enough resolution for a 6x4 grid
+    const w = 96, h = 64; // small sample size = fast
     canvas.width = w; canvas.height = h;
     ctx.drawImage(video, 0, 0, w, h);
-    const frame = ctx.getImageData(0, 0, w, h);
 
-    const cellW = w / GRID_COLS, cellH = h / GRID_ROWS;
-    let bestAvg = -1, bestCol = 0, bestRow = 0;
-    const cellAverages = [];
+    const cw = w * CENTER_FRACTION, ch = h * CENTER_FRACTION;
+    const x0 = Math.floor((w-cw)/2), y0 = Math.floor((h-ch)/2);
+    const frame = ctx.getImageData(x0, y0, Math.floor(cw), Math.floor(ch));
 
-    for(let r = 0; r < GRID_ROWS; r++){
-      for(let c = 0; c < GRID_COLS; c++){
-        const x0 = Math.floor(c*cellW), y0 = Math.floor(r*cellH);
-        const x1 = Math.floor(x0+cellW), y1 = Math.floor(y0+cellH);
-        let sum = 0, count = 0;
-        for(let y=y0; y<y1; y++){
-          let rowOffset = (y*w)*4;
-          for(let x=x0; x<x1; x++){
-            const i = rowOffset + x*4;
-            sum += 0.299*frame.data[i] + 0.587*frame.data[i+1] + 0.114*frame.data[i+2];
-            count++;
-          }
-        }
-        const avg = count ? sum/count : 0;
-        cellAverages.push(avg);
-        if(avg > bestAvg){ bestAvg = avg; bestCol = c; bestRow = r; }
-      }
+    let sum = 0;
+    for(let i=0; i<frame.data.length; i+=4){
+      sum += 0.299*frame.data[i] + 0.587*frame.data[i+1] + 0.114*frame.data[i+2];
     }
+    const avg = sum / (frame.data.length/4);
 
     smoothedBrightness = smoothedBrightness === null
-      ? bestAvg
-      : smoothedBrightness*SMOOTHING + bestAvg*(1-SMOOTHING);
+      ? avg
+      : smoothedBrightness*SMOOTHING + avg*(1-SMOOTHING);
 
-    positionDetectBox(bestCol, bestRow, GRID_COLS, GRID_ROWS);
     onBrightnessSample(smoothedBrightness, performance.now());
   }
   camRaf = requestAnimationFrame(analyzeFrame);
-}
-
-function positionDetectBox(col, row, cols, rows){
-  const leftPct = ((col + 0.5) / cols) * 100;
-  const topPct = ((row + 0.5) / rows) * 100;
-  detectBox.style.left = leftPct + '%';
-  detectBox.style.top = topPct + '%';
 }
 
 document.getElementById('btnCopyRx').addEventListener('click', ()=>{
