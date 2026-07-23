@@ -151,16 +151,20 @@
   #videoWrap{position:relative; border-radius:var(--radius); overflow:hidden; background:#000; aspect-ratio:4/3;}
   video{width:100%; height:100%; object-fit:cover; display:block;}
   #detectBox{
-    position:absolute; width:110px; height:110px; border:2px solid var(--amber-dim); border-radius:8px;
-    top:50%; left:50%; transform:translate(-50%,-50%); opacity:0.55; transition:opacity 0.1s, border-color 0.1s;
-    box-shadow:0 0 10px rgba(255,183,77,0.25);
+    position:absolute; width:34px; height:34px; border:2px solid var(--amber-dim); border-radius:50%;
+    top:50%; left:50%; transform:translate(-50%,-50%); opacity:0.6; transition:opacity 0.1s, border-color 0.1s;
+    box-shadow:0 0 8px rgba(255,183,77,0.3);
+  }
+  #detectBox::before{
+    content:""; position:absolute; width:1px; height:14px; background:var(--amber-dim);
+    top:50%; left:50%; transform:translate(-50%,-50%);
   }
   #detectBox::after{
-    content:""; position:absolute; width:6px; height:6px; border-radius:50%;
-    background:var(--amber-dim); top:50%; left:50%; transform:translate(-50%,-50%);
+    content:""; position:absolute; width:14px; height:1px; background:var(--amber-dim);
+    top:50%; left:50%; transform:translate(-50%,-50%);
   }
-  #detectBox.show{opacity:1; border-color:var(--danger); box-shadow:0 0 16px rgba(255,107,107,0.55);}
-  #detectBox.show::after{background:var(--danger);}
+  #detectBox.show{opacity:1; border-color:var(--danger); box-shadow:0 0 14px rgba(255,107,107,0.6);}
+  #detectBox.show::before, #detectBox.show::after{background:var(--danger);}
   .live-morse{font-family:'JetBrains Mono',monospace; color:var(--teal); font-size:15px; min-height:20px; letter-spacing:2px;}
   .received-box{
     background:var(--panel-2); border-radius:10px; padding:12px; min-height:70px;
@@ -862,7 +866,7 @@ function stopCamera(){
 // visual #detectBox target). No auto-tracking/auto-focus hunting — the user aims
 // the camera so the light sits in the box, which is simpler and more predictable
 // than a moving detector, especially one-handed.
-const CENTER_FRACTION = 0.35; // portion of frame width/height sampled, centered
+const CENTER_FRACTION = 0.16; // portion of frame width/height sampled, centered — matches the small pin-point box
 
 // Light-weight exponential smoothing so single noisy camera frames don't register
 // as spurious transitions; not a full moving-average buffer, so it stays real-time.
